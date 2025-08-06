@@ -1,60 +1,49 @@
 import React, { useState } from 'react'
-import { Calendar, MapPin, DollarSign, Users, Plus, Trash2, Save } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Calendar, Clock, Image, Plus, Trash2, DollarSign } from 'lucide-react'
+import { useEventContract } from '../hooks/useEventContract'
 import { useWeb3 } from '../context/Web3Context'
 import toast from 'react-hot-toast'
 
-interface TicketTier {
+interface TicketTierForm {
   name: string
   price: string
-  maxSupply: string
-  maxPerWallet: string
+  maxSupply: number
+  maxPerWallet: number
   description: string
 }
 
-const CreateEvent = () => {
+const CreateEvent: React.FC = () => {
+  const navigate = useNavigate()
   const { isConnected, connectWallet } = useWeb3()
-  const [isLoading, setIsLoading] = useState(false)
-  
-  const [eventData, setEventData] = useState({
+  const { createEvent, createTicketTier, loading } = useEventContract()
+
+  const [formData, setFormData] = useState({
     name: '',
     description: '',
     imageUri: '',
     startDate: '',
     startTime: '',
     endDate: '',
-    endTime: '',
-    location: '',
-    category: 'technology',
-    website: ''
+    endTime: ''
   })
 
-  const [ticketTiers, setTicketTiers] = useState<TicketTier[]>([
+  const [ticketTiers, setTicketTiers] = useState<TicketTierForm[]>([
     {
       name: 'General Admission',
-      price: '0.1',
-      maxSupply: '1000',
-      maxPerWallet: '5',
-      description: 'Standard access to the event'
+      price: '0.01',
+      maxSupply: 100,
+      maxPerWallet: 5,
+      description: 'Standard event access'
     }
   ])
 
-  const categories = [
-    { value: 'technology', label: 'Technology' },
-    { value: 'music', label: 'Music' },
-    { value: 'art', label: 'Art' },
-    { value: 'food', label: 'Food & Drink' },
-    { value: 'gaming', label: 'Gaming' },
-    { value: 'business', label: 'Business' },
-    { value: 'education', label: 'Education' },
-    { value: 'sports', label: 'Sports' },
-    { value: 'other', label: 'Other' }
-  ]
-
-  const handleEventDataChange = (field: string, value: string) => {
-    setEventData(prev => ({ ...prev, [field]: value }))
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleTierChange = (index: number, field: string, value: string) => {
+  const handleTierChange = (index: number, field: keyof TicketTierForm, value: string | number) => {
     setTicketTiers(prev => prev.map((tier, i) => 
       i === index ? { ...tier, [field]: value } : tier
     ))
@@ -63,9 +52,9 @@ const CreateEvent = () => {
   const addTier = () => {
     setTicketTiers(prev => [...prev, {
       name: '',
-      price: '0.1',
-      maxSupply: '100',
-      maxPerWallet: '2',
+      price: '0.01',
+      maxSupply: 50,
+      maxPerWallet: 3,
       description: ''
     }])
   }
@@ -84,348 +73,311 @@ const CreateEvent = () => {
       return
     }
 
-    // Validation
-    if (!eventData.name || !eventData.description || !eventData.startDate || !eventData.startTime) {
-      toast.error('Please fill in all required fields')
-      return
-    }
-
-    if (ticketTiers.some(tier => !tier.name || !tier.price || !tier.maxSupply)) {
-      toast.error('Please complete all ticket tier information')
-      return
-    }
-
-    setIsLoading(true)
     try {
-      // Simulate blockchain transaction
-      await new Promise(resolve => setTimeout(resolve, 3000))
-      
+      // Validate form
+      if (!formData.name || !formData.description || !formData.startDate || !formData.endDate) {
+        toast.error('Please fill in all required fields')
+        return
+      }
+
+      // Create start and end dates
+      const startDateTime = new Date(`${formData.startDate}T${formData.startTime || '00:00'}`)
+      const endDateTime = new Date(`${formData.endDate}T${formData.endTime || '23:59'}`)
+
+      if (startDateTime >= endDateTime) {
+        toast.error('End date must be after start date')
+        return
+      }
+
+      if (startDateTime <= new Date()) {
+        toast.error('Start date must be in the future')
+        return
+      }
+
+      // Use a default image if none provided
+      const imageUri = formData.imageUri || `https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=400&fit=crop`
+
+      // Create the event
+      const { eventId } = await createEvent(
+        formData.name,
+        formData.description,
+        imageUri,
+        startDateTime,
+        endDateTime
+      )
+
+      // Create ticket tiers
+      for (const tier of ticketTiers) {
+        if (tier.name && tier.price) {
+          await createTicketTier(
+            eventId,
+            tier.name,
+            tier.price,
+            tier.maxSupply,
+            tier.maxPerWallet,
+            `https://api.example.com/metadata/${eventId}/${tier.name.toLowerCase().replace(/\s+/g, '-')}`
+          )
+        }
+      }
+
       toast.success('Event created successfully!')
-      
-      // Reset form
-      setEventData({
-        name: '',
-        description: '',
-        imageUri: '',
-        startDate: '',
-        startTime: '',
-        endDate: '',
-        endTime: '',
-        location: '',
-        category: 'technology',
-        website: ''
-      })
-      setTicketTiers([{
-        name: 'General Admission',
-        price: '0.1',
-        maxSupply: '1000',
-        maxPerWallet: '5',
-        description: 'Standard access to the event'
-      }])
-      
+      navigate(`/events/${eventId}`)
     } catch (error) {
-      toast.error('Failed to create event. Please try again.')
-    } finally {
-      setIsLoading(false)
+      console.error('Error creating event:', error)
     }
   }
 
-  return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Create Event
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Launch your event on the blockchain with NFT tickets and transparent smart contracts
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Basic Event Information */}
-          <div className="rounded-3xl bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <Calendar className="h-6 w-6 mr-3 text-purple-600" />
-              Event Details
-            </h2>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Event Name *
-                </label>
-                <input
-                  type="text"
-                  value={eventData.name}
-                  onChange={(e) => handleEventDataChange('name', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Enter event name"
-                  required
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description *
-                </label>
-                <textarea
-                  value={eventData.description}
-                  onChange={(e) => handleEventDataChange('description', e.target.value)}
-                  rows={4}
-                  className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                  placeholder="Describe your event"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category
-                </label>
-                <select
-                  value={eventData.category}
-                  onChange={(e) => handleEventDataChange('category', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                  {categories.map(category => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Event Image URL
-                </label>
-                <input
-                  type="url"
-                  value={eventData.imageUri}
-                  onChange={(e) => handleEventDataChange('imageUri', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <MapPin className="h-4 w-4 inline mr-1" />
-                  Location
-                </label>
-                <input
-                  type="text"
-                  value={eventData.location}
-                  onChange={(e) => handleEventDataChange('location', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Event location or 'Virtual Event'"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Start Date *
-                </label>
-                <input
-                  type="date"
-                  value={eventData.startDate}
-                  onChange={(e) => handleEventDataChange('startDate', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Start Time *
-                </label>
-                <input
-                  type="time"
-                  value={eventData.startTime}
-                  onChange={(e) => handleEventDataChange('startTime', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  value={eventData.endDate}
-                  onChange={(e) => handleEventDataChange('endDate', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  End Time
-                </label>
-                <input
-                  type="time"
-                  value={eventData.endTime}
-                  onChange={(e) => handleEventDataChange('endTime', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Website URL
-                </label>
-                <input
-                  type="url"
-                  value={eventData.website}
-                  onChange={(e) => handleEventDataChange('website', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="https://your-event-website.com"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Ticket Tiers */}
-          <div className="rounded-3xl bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-                <DollarSign className="h-6 w-6 mr-3 text-purple-600" />
-                Ticket Tiers
-              </h2>
+  if (!isConnected) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pt-20">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-md mx-auto">
+              <Calendar className="w-16 h-16 text-purple-300 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-white mb-4">Connect Your Wallet</h2>
+              <p className="text-purple-200 mb-6">
+                Connect your wallet to create and manage events on the blockchain.
+              </p>
               <button
-                type="button"
-                onClick={addTier}
-                className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-purple-500/20 text-purple-700 hover:bg-purple-500/30 transition-all duration-200"
+                onClick={connectWallet}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-xl font-semibold transition-all transform hover:scale-105"
               >
-                <Plus className="h-4 w-4" />
-                <span>Add Tier</span>
+                Connect Wallet
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-            <div className="space-y-6">
-              {ticketTiers.map((tier, index) => (
-                <div key={index} className="p-6 rounded-2xl bg-white/30 backdrop-blur-sm border border-white/40">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      Tier {index + 1}
-                    </h3>
-                    {ticketTiers.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeTier(index)}
-                        className="p-2 rounded-lg text-red-600 hover:bg-red-100/50 transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pt-20">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-white mb-4">Create New Event</h1>
+            <p className="text-xl text-purple-200">
+              Launch your event on the blockchain with NFT tickets
+            </p>
+          </div>
 
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tier Name *
-                      </label>
-                      <input
-                        type="text"
-                        value={tier.name}
-                        onChange={(e) => handleTierChange(index, 'name', e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        placeholder="e.g., General Admission"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Price (ETH) *
-                      </label>
-                      <input
-                        type="number"
-                        step="0.001"
-                        min="0"
-                        value={tier.price}
-                        onChange={(e) => handleTierChange(index, 'price', e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        placeholder="0.1"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Max Supply *
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={tier.maxSupply}
-                        onChange={(e) => handleTierChange(index, 'maxSupply', e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        placeholder="1000"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Max Per Wallet
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={tier.maxPerWallet}
-                        onChange={(e) => handleTierChange(index, 'maxPerWallet', e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        placeholder="5"
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Description
-                      </label>
-                      <textarea
-                        value={tier.description}
-                        onChange={(e) => handleTierChange(index, 'description', e.target.value)}
-                        rows={2}
-                        className="w-full px-4 py-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                        placeholder="Describe what this tier includes"
-                      />
-                    </div>
-                  </div>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Event Details */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
+              <h2 className="text-2xl font-bold text-white mb-6">Event Details</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <label className="block text-white font-semibold mb-2">Event Name *</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Enter event name"
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required
+                  />
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Submit Button */}
-          <div className="text-center">
-            <button
-              type="submit"
-              disabled={isLoading || !isConnected}
-              className="inline-flex items-center space-x-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
-            >
-              {isLoading ? (
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
-              ) : (
-                <Save className="h-6 w-6" />
-              )}
-              <span className="text-lg font-semibold">
-                {isLoading ? 'Creating Event...' : isConnected ? 'Create Event' : 'Connect Wallet First'}
-              </span>
-            </button>
-            
-            {!isConnected && (
-              <p className="text-sm text-gray-600 mt-4">
-                Please connect your wallet to create an event
-              </p>
-            )}
-          </div>
-        </form>
+                <div className="md:col-span-2">
+                  <label className="block text-white font-semibold mb-2">Description *</label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder="Describe your event"
+                    rows={4}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                    required
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-white font-semibold mb-2">
+                    <Image className="inline w-5 h-5 mr-2" />
+                    Event Image URL
+                  </label>
+                  <input
+                    type="url"
+                    name="imageUri"
+                    value={formData.imageUri}
+                    onChange={handleInputChange}
+                    placeholder="https://example.com/image.jpg (optional - default will be used)"
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2">
+                    <Calendar className="inline w-5 h-5 mr-2" />
+                    Start Date *
+                  </label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={formData.startDate}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2">
+                    <Clock className="inline w-5 h-5 mr-2" />
+                    Start Time
+                  </label>
+                  <input
+                    type="time"
+                    name="startTime"
+                    value={formData.startTime}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2">
+                    <Calendar className="inline w-5 h-5 mr-2" />
+                    End Date *
+                  </label>
+                  <input
+                    type="date"
+                    name="endDate"
+                    value={formData.endDate}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2">
+                    <Clock className="inline w-5 h-5 mr-2" />
+                    End Time
+                  </label>
+                  <input
+                    type="time"
+                    name="endTime"
+                    value={formData.endTime}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Ticket Tiers */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-white">Ticket Tiers</h2>
+                <button
+                  type="button"
+                  onClick={addTier}
+                  className="flex items-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl transition-colors"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Tier
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {ticketTiers.map((tier, index) => (
+                  <div key={index} className="bg-white/5 rounded-xl p-4 border border-white/10">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-white">Tier {index + 1}</h3>
+                      {ticketTiers.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeTier(index)}
+                          className="text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-white font-semibold mb-2">Tier Name</label>
+                        <input
+                          type="text"
+                          value={tier.name}
+                          onChange={(e) => handleTierChange(index, 'name', e.target.value)}
+                          placeholder="e.g., VIP, General Admission"
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-white font-semibold mb-2">
+                          <DollarSign className="inline w-4 h-4 mr-1" />
+                          Price (ETH)
+                        </label>
+                        <input
+                          type="number"
+                          step="0.001"
+                          min="0"
+                          value={tier.price}
+                          onChange={(e) => handleTierChange(index, 'price', e.target.value)}
+                          placeholder="0.01"
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-white font-semibold mb-2">Max Supply</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={tier.maxSupply}
+                          onChange={(e) => handleTierChange(index, 'maxSupply', parseInt(e.target.value) || 1)}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-white font-semibold mb-2">Max Per Wallet</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={tier.maxPerWallet}
+                          onChange={(e) => handleTierChange(index, 'maxPerWallet', parseInt(e.target.value) || 1)}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="text-center">
+              <button
+                type="submit"
+                disabled={loading}
+                className={`px-12 py-4 rounded-xl font-semibold text-white transition-all ${
+                  loading
+                    ? 'bg-gray-600 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transform hover:scale-105'
+                }`}
+              >
+                {loading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Creating Event...
+                  </div>
+                ) : (
+                  'Create Event'
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )
