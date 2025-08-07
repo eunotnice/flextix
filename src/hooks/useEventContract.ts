@@ -411,7 +411,7 @@ export const useEventContract = () => {
 
   return {
     contract,
-    loading,
+    loading: loading || !contract,
     isConnected,
     createEvent,
     createTicketTier,

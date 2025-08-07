@@ -5,10 +5,15 @@ import { useWeb3 } from '../context/Web3Context'
 export const useEvents = () => {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
-  const { contract } = useEventContract()
+  const { contract, loading: contractLoading } = useEventContract() // Get loading state
   const { isConnected, isCorrectNetwork } = useWeb3()
 
   const fetchEvents = async () => {
+    if (contractLoading) {
+      console.log('⏳ Waiting for contract to initialize...')
+      return
+    }
+    
     console.log('=== FETCH EVENTS START ===')
     console.log('Contract available:', !!contract)
     console.log('Is connected:', isConnected)
@@ -50,8 +55,8 @@ export const useEvents = () => {
 
       // Method 1: Try to get events from EventCreated logs
       console.log('🔍 Looking for EventCreated logs...')
-      const filter = contract.filters.EventCreated()
-      const eventLogs = await contract.queryFilter(filter)
+      const filter = contract.filters.EventCreated(null, null)
+      const eventLogs = await contract.queryFilter(filter, 0, 'latest')
       console.log('📊 Found event logs:', eventLogs.length)
       
       let eventsData: Event[] = []
