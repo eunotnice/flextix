@@ -1,12 +1,17 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Calendar, MapPin, Users, Clock, Search, Filter } from 'lucide-react'
+import { Calendar, MapPin, Users, Clock, Search, Filter, Plus } from 'lucide-react'
 import { useEvents } from '../hooks/useEvents'
+import { useEventContract } from '../hooks/useEventContract'
+import { useWeb3 } from '../context/Web3Context'
 
 const Events: React.FC = () => {
-  const { events, loading } = useEvents()
+  const { events, loading, refetch } = useEvents()
+  const { createEvent, contract } = useEventContract()
+  const { isConnected, isCorrectNetwork } = useWeb3()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'upcoming' | 'live' | 'ended'>('all')
+  const [creatingTestEvent, setCreatingTestEvent] = useState(false)
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleDateString('en-US', {
@@ -24,6 +29,66 @@ const Events: React.FC = () => {
     if (now >= event.startTime && now <= event.endTime) return 'live'
     if (now < event.startTime) return 'upcoming'
     return 'ended'
+  }
+
+  const createTestEvent = async () => {
+    console.log('=== CREATE TEST EVENT START ===')
+    console.log('Is connected:', isConnected)
+    console.log('Is correct network:', isCorrectNetwork)
+    
+    if (!isConnected || !isCorrectNetwork) {
+      alert('Please connect your wallet and switch to Hardhat Local network')
+      return
+    }
+
+    try {
+      setCreatingTestEvent(true)
+      console.log('✅ Starting test event creation...')
+      
+      const startTime = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours from now
+      const endTime = new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours from now
+      
+      console.log('📅 Start time:', startTime)
+      console.log('📅 End time:', endTime)
+      
+      const result = await createEvent(
+        'Test Event',
+        'This is a test event created for debugging',
+        'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500',
+        startTime,
+        endTime
+      )
+      
+      console.log('✅ Test event created successfully:', result)
+      alert('Test event created successfully!')
+      refetch() // Refresh the events list
+    } catch (error) {
+      console.error('❌ Error creating test event:', error)
+      alert('Failed to create test event: ' + (error as any).message)
+    } finally {
+      setCreatingTestEvent(false)
+      console.log('=== CREATE TEST EVENT END ===')
+    }
+  }
+
+  const testContract = async () => {
+    console.log('=== TEST CONTRACT START ===')
+    try {
+      if (!contract) {
+        console.log('❌ Contract not available')
+        alert('Contract not available')
+        return
+      }
+      
+      console.log('✅ Contract available, testing...')
+      const name = await contract.name()
+      console.log('✅ Contract name:', name)
+      alert(`Contract test successful! Name: ${name}`)
+    } catch (error) {
+      console.error('❌ Contract test failed:', error)
+      alert('Contract test failed: ' + (error as any).message)
+    }
+    console.log('=== TEST CONTRACT END ===')
   }
 
   const filteredEvents = events.filter(event => {
@@ -59,6 +124,33 @@ const Events: React.FC = () => {
           <p className="text-xl text-purple-200 max-w-2xl mx-auto">
             Explore blockchain-powered events with NFT tickets and exclusive rewards
           </p>
+        </div>
+
+        {/* Debug Info */}
+        <div className="mb-6 p-4 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
+          <h3 className="text-white font-semibold mb-2">Debug Information:</h3>
+          <div className="text-purple-200 text-sm space-y-1">
+            <div>Connected: {isConnected ? 'Yes' : 'No'}</div>
+            <div>Correct Network: {isCorrectNetwork ? 'Yes' : 'No'}</div>
+            <div>Events Found: {events.length}</div>
+            <div>Loading: {loading ? 'Yes' : 'No'}</div>
+          </div>
+          <div className="mt-3 space-x-2">
+            <button
+              onClick={testContract}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            >
+              Test Contract
+            </button>
+            <button
+              onClick={createTestEvent}
+              disabled={creatingTestEvent}
+              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50"
+            >
+              <Plus className="h-4 w-4 inline mr-2" />
+              <span>{creatingTestEvent ? 'Creating...' : 'Create Test Event'}</span>
+            </button>
+          </div>
         </div>
 
         {/* Search and Filter */}
@@ -98,91 +190,54 @@ const Events: React.FC = () => {
               <p className="text-purple-200">
                 {searchTerm || filterStatus !== 'all' 
                   ? 'Try adjusting your search or filter criteria'
-                  : 'No events have been created yet. Be the first to create one!'
-                }
+                  : 'No events have been created yet. Be the first to create an event!'}
               </p>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredEvents.map((event) => {
-              const status = getEventStatus(event)
-              const statusColors = {
-                upcoming: 'bg-blue-500',
-                live: 'bg-green-500',
-                ended: 'bg-gray-500'
-              }
-              const statusLabels = {
-                upcoming: 'Upcoming',
-                live: 'Live Now',
-                ended: 'Ended'
-              }
-
-              return (
-                <Link
-                  key={event.eventId}
-                  to={`/events/${event.eventId}`}
-                  className="group block"
-                >
-                  <div className="bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden border border-white/20 hover:border-purple-400 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                    {/* Event Image */}
-                    <div className="relative h-48 overflow-hidden">
-                      <img
-                        src={event.imageUri || `https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=300&fit=crop`}
-                        alt={event.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
-                      <div className="absolute top-4 right-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${statusColors[status]}`}>
-                          {statusLabels[status]}
-                        </span>
-                      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredEvents.map((event) => (
+              <div key={event.eventId} className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
+                <div className="aspect-video bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl mb-4 flex items-center justify-center">
+                  <Calendar className="w-12 h-12 text-white" />
+                </div>
+                
+                <div className="space-y-3">
+                  <h3 className="text-xl font-semibold text-white">{event.name}</h3>
+                  <p className="text-purple-200 text-sm line-clamp-2">{event.description}</p>
+                  
+                  <div className="space-y-2 text-sm text-purple-200">
+                    <div className="flex items-center space-x-2">
+                      <Clock className="w-4 h-4" />
+                      <span>{formatDate(event.startTime)}</span>
                     </div>
-
-                    {/* Event Details */}
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-300 transition-colors">
-                        {event.name}
-                      </h3>
-                      
-                      <p className="text-purple-200 text-sm mb-4 line-clamp-2">
-                        {event.description}
-                      </p>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center text-purple-200 text-sm">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          <span>{formatDate(event.startTime)}</span>
-                        </div>
-                        
-                        <div className="flex items-center text-purple-200 text-sm">
-                          <Clock className="w-4 h-4 mr-2" />
-                          <span>Ends: {formatDate(event.endTime)}</span>
-                        </div>
-
-                        <div className="flex items-center text-purple-200 text-sm">
-                          <Users className="w-4 h-4 mr-2" />
-                          <span className="truncate">
-                            By: {event.organizer.slice(0, 6)}...{event.organizer.slice(-4)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 pt-4 border-t border-white/20">
-                        <div className="flex justify-between items-center">
-                          <span className="text-purple-300 font-semibold">
-                            NFT Tickets Available
-                          </span>
-                          <div className="text-right">
-                            <div className="text-white font-bold">View Details</div>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="w-4 h-4" />
+                      <span>Blockchain Event</span>
                     </div>
                   </div>
-                </Link>
-              )
-            })}
+                  
+                  <div className="flex items-center justify-between pt-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      getEventStatus(event) === 'live' 
+                        ? 'bg-green-500/20 text-green-300' 
+                        : getEventStatus(event) === 'upcoming'
+                        ? 'bg-blue-500/20 text-blue-300'
+                        : 'bg-gray-500/20 text-gray-300'
+                    }`}>
+                      {getEventStatus(event).toUpperCase()}
+                    </span>
+                    
+                    <Link
+                      to={`/events/${event.eventId}`}
+                      className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 text-sm font-medium"
+                    >
+                      View Details
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
