@@ -1,10 +1,9 @@
-require("@nomicfoundation/hardhat-toolbox");
-require("dotenv/config");
+import "@nomicfoundation/hardhat-toolbox";
+import "dotenv/config";
 
-/** @type import('hardhat/config').HardhatUserConfig */
-module.exports = {
+const config = {
   solidity: {
-    version: "0.8.19",
+    version: "0.8.20",
     settings: {
       optimizer: {
         enabled: true,
@@ -14,7 +13,7 @@ module.exports = {
   },
   networks: {
     sepolia: {
-      url: process.env.SEPOLIA_RPC_URL || "https://sepolia.infura.io/v3/YOUR_INFURA_KEY",
+      url: "https://eth-sepolia.g.alchemy.com/v2/demo",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 11155111
     },
@@ -27,3 +26,5 @@ module.exports = {
     apiKey: process.env.ETHERSCAN_API_KEY
   }
 };
+
+export default config;

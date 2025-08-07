@@ -4,18 +4,15 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title EventTicketing
  * @dev NFT-based event ticketing system with multiple tiers and blind bag rewards
  */
 contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
-    using Counters for Counters.Counter;
-    
-    Counters.Counter private _tokenIdCounter;
-    Counters.Counter private _eventIdCounter;
+    uint256 private _tokenIdCounter;
+    uint256 private _eventIdCounter;
     
     struct Event {
         uint256 eventId;
@@ -77,7 +74,7 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
     event BlindBagClaimed(uint256 indexed eventId, address indexed claimer, uint256 indexed rewardId);
     event EventEnded(uint256 indexed eventId);
     
-    constructor() ERC721("EventTicket", "ETKT") {}
+    constructor() ERC721("EventTicket", "ETKT") Ownable(msg.sender) {}
     
     /**
      * @dev Create a new event
@@ -92,8 +89,8 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         require(_startTime > block.timestamp, "Start time must be in the future");
         require(_endTime > _startTime, "End time must be after start time");
         
-        uint256 eventId = _eventIdCounter.current();
-        _eventIdCounter.increment();
+        uint256 eventId = _eventIdCounter;
+        _eventIdCounter++;
         
         events[eventId] = Event({
             eventId: eventId,
@@ -126,8 +123,8 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         require(events[_eventId].isActive, "Event is not active");
         require(_maxSupply > 0, "Max supply must be greater than 0");
         
-        uint256 tierId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
+        uint256 tierId = _tokenIdCounter;
+        _tokenIdCounter++;
         
         ticketTiers[tierId] = TicketTier({
             tierId: tierId,
@@ -163,8 +160,8 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         
         // Mint tickets
         for (uint256 i = 0; i < _quantity; i++) {
-            uint256 tokenId = _tokenIdCounter.current();
-            _tokenIdCounter.increment();
+            uint256 tokenId = _tokenIdCounter;
+            _tokenIdCounter++;
             
             _safeMint(msg.sender, tokenId);
             _setTokenURI(tokenId, tier.metadataUri);
@@ -216,8 +213,8 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         require(events[_eventId].organizer == msg.sender, "Only event organizer can create rewards");
         require(_rarity >= 1 && _rarity <= 100, "Rarity must be between 1-100");
         
-        uint256 rewardId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
+        uint256 rewardId = _tokenIdCounter;
+        _tokenIdCounter++;
         
         blindBagRewards[rewardId] = BlindBagReward({
             rewardId: rewardId,
@@ -246,7 +243,7 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         // Generate pseudo-random reward
         uint256 randomSeed = uint256(keccak256(abi.encodePacked(
             block.timestamp,
-            block.difficulty,
+            block.prevrandao,
             msg.sender,
             _eventId
         ))) % 100 + 1;
@@ -264,8 +261,8 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         }
         
         if (selectedRewardId > 0) {
-            uint256 tokenId = _tokenIdCounter.current();
-            _tokenIdCounter.increment();
+            uint256 tokenId = _tokenIdCounter;
+            _tokenIdCounter++;
             
             _safeMint(msg.sender, tokenId);
             _setTokenURI(tokenId, blindBagRewards[selectedRewardId].metadataUri);
@@ -290,13 +287,15 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
      * @dev Check if user has attended an event
      */
     function hasAttendedEvent(address _user, uint256 _eventId) public view returns (bool) {
-        uint256 totalSupply = _tokenIdCounter.current();
+        uint256 totalSupply = _tokenIdCounter;
         for (uint256 i = 0; i < totalSupply; i++) {
-            if (_exists(i)) {
+            try this.ownerOf(i) returns (address owner) {
                 Ticket memory ticket = tickets[i];
                 if (ticket.eventId == _eventId && ticket.owner == _user && ticket.isUsed) {
                     return true;
                 }
+            } catch {
+                // Token doesn't exist, skip
             }
         }
         return false;
@@ -320,14 +319,18 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
      * @dev Get user's tickets for an event
      */
     function getUserTickets(address _user, uint256 _eventId) external view returns (uint256[] memory) {
-        uint256 totalSupply = _tokenIdCounter.current();
+        uint256 totalSupply = _tokenIdCounter;
         uint256[] memory userTickets = new uint256[](totalSupply);
         uint256 count = 0;
         
         for (uint256 i = 0; i < totalSupply; i++) {
-            if (_exists(i) && ownerOf(i) == _user && tickets[i].eventId == _eventId) {
-                userTickets[count] = i;
-                count++;
+            try this.ownerOf(i) returns (address owner) {
+                if (owner == _user && tickets[i].eventId == _eventId) {
+                    userTickets[count] = i;
+                    count++;
+                }
+            } catch {
+                // Token doesn't exist, skip
             }
         }
         
@@ -341,10 +344,6 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
     }
     
     // Override functions
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
-        super._burn(tokenId);
-    }
-    
     function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }

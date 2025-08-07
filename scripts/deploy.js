@@ -1,15 +1,29 @@
-const { ethers } = require("hardhat");
-const fs = require("fs");
+import pkg from 'hardhat';
+const { ethers } = pkg;
+import fs from "fs";
 
 async function main() {
   console.log("Deploying contracts...");
 
   // Get the deployer account
-  const [deployer] = await ethers.getSigners();
+  const signers = await ethers.getSigners();
+  console.log("Available signers:", signers.length);
+  
+  if (signers.length === 0) {
+    console.error("❌ No signers found. Check your PRIVATE_KEY in .env file");
+    process.exit(1);
+  }
+
+  const deployer = signers[0];
   console.log("Deploying contracts with account:", deployer.address);
 
   const balance = await ethers.provider.getBalance(deployer.address);
   console.log("Account balance:", ethers.formatEther(balance), "ETH");
+
+  if (balance === 0n) {
+    console.error("❌ Account has no ETH. Get some Sepolia testnet ETH from https://sepoliafaucet.com/");
+    process.exit(1);
+  }
 
   // Deploy EventTicketing contract
   console.log("\nDeploying EventTicketing contract...");

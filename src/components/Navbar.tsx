@@ -1,10 +1,10 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Ticket, Wallet, Menu, X, Calendar, User } from 'lucide-react'
+import { Ticket, Wallet, Menu, X, Calendar, User, AlertTriangle } from 'lucide-react'
 import { useWeb3 } from '../context/Web3Context'
 
 const Navbar = () => {
-  const { account, connectWallet, disconnectWallet, isConnected } = useWeb3()
+  const { account, connectWallet, disconnectWallet, isConnected, isCorrectNetwork, switchToCorrectNetwork, chainId } = useWeb3()
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
 
@@ -17,6 +17,13 @@ const Navbar = () => {
 
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
+
+  const getNetworkName = (chainId: number | null) => {
+    if (chainId === 31337) return 'Hardhat Local'
+    if (chainId === 11155111) return 'Sepolia'
+    if (chainId === 1) return 'Ethereum'
+    return `Chain ${chainId}`
   }
 
   return (
@@ -59,6 +66,30 @@ const Navbar = () => {
           <div className="flex items-center space-x-4">
             {isConnected ? (
               <div className="flex items-center space-x-3">
+                {/* Network Status */}
+                <div className={`px-3 py-2 rounded-xl backdrop-blur-sm border shadow-lg ${
+                  isCorrectNetwork 
+                    ? 'bg-green-500/20 border-green-200/50 text-green-700' 
+                    : 'bg-red-500/20 border-red-200/50 text-red-700'
+                }`}>
+                  <div className="flex items-center space-x-2">
+                    {!isCorrectNetwork && <AlertTriangle className="h-4 w-4" />}
+                    <span className="text-sm font-medium">
+                      {getNetworkName(chainId)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Switch Network Button */}
+                {!isCorrectNetwork && (
+                  <button
+                    onClick={switchToCorrectNetwork}
+                    className="px-3 py-2 rounded-xl bg-blue-500/20 text-blue-700 hover:bg-blue-500/30 transition-all duration-200 backdrop-blur-sm border border-blue-200/50 shadow-lg text-sm font-medium"
+                  >
+                    Switch Network
+                  </button>
+                )}
+
                 <div className="px-4 py-2 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg">
                   <span className="text-sm font-medium text-gray-700">
                     {formatAddress(account!)}
