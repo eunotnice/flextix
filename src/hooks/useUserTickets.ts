@@ -24,7 +24,7 @@ export const useUserTickets = () => {
       setLoading(true)
       
       // Listen for TicketPurchased events for this user
-      const filter = contract.filters.TicketPurchased(null, null, null, account)
+      const filter = contract.filters.TicketPurchased(null, null, account)
       const ticketLogs = await contract.queryFilter(filter)
       
       const ticketPromises = ticketLogs.map(async (log) => {

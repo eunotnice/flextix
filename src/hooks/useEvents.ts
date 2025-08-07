@@ -36,6 +36,7 @@ export const useEvents = () => {
       setLoading(true)
       console.log('✅ All checks passed, fetching events...')
       
+      /*
       // Test contract connection first
       try {
         const contractName = await contract.name()
@@ -45,7 +46,8 @@ export const useEvents = () => {
         setLoading(false)
         return
       }
-      
+      */
+
       // Method 1: Try to get events from EventCreated logs
       console.log('🔍 Looking for EventCreated logs...')
       const filter = contract.filters.EventCreated()

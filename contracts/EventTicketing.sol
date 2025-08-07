@@ -69,7 +69,7 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
     // Events
     event EventCreated(uint256 indexed eventId, string name, address indexed organizer);
     event TierCreated(uint256 indexed tierId, uint256 indexed eventId, string name, uint256 price);
-    event TicketPurchased(uint256 indexed tokenId, uint256 indexed eventId, uint256 indexed tierId, address buyer);
+    event TicketPurchased(uint256 indexed eventId, uint256 indexed tierId, uint256 tokenId, address indexed buyer);
     event TicketUsed(uint256 indexed tokenId, uint256 indexed eventId);
     event BlindBagClaimed(uint256 indexed eventId, address indexed claimer, uint256 indexed rewardId);
     event EventEnded(uint256 indexed eventId);
