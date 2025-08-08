@@ -281,9 +281,12 @@ export const useEventContract = () => {
   }
 
   const getEvent = async (eventId: number): Promise<Event | null> => {
-    try {
-      if (!contract) return null
-      
+    if (!contract) {
+      console.error('❌ No contract found')
+      return null
+    }
+
+    try {      
       const eventData = await contract.events(eventId)
       return {
         eventId: Number(eventData.eventId),

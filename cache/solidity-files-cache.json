@@ -355,6 +355,44 @@
         "IERC721"
       ]
     },
+    "C:\\Users\\User\\flextix\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\extensions\\IERC721Metadata.sol": {
+      "lastModificationDate": 1754545753073,
+      "contentHash": "136c64eca25bcb8a68f43ac6605559f9",
+      "sourceName": "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../IERC721.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.2"
+      ],
+      "artifacts": [
+        "IERC721Metadata"
+      ]
+    },
     "C:\\Users\\User\\flextix\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\utils\\ERC721Utils.sol": {
       "lastModificationDate": 1754545752910,
       "contentHash": "4cefad279a37c895b709bce2b901816e",
@@ -392,44 +430,6 @@
       ],
       "artifacts": [
         "ERC721Utils"
-      ]
-    },
-    "C:\\Users\\User\\flextix\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\extensions\\IERC721Metadata.sol": {
-      "lastModificationDate": 1754545753073,
-      "contentHash": "136c64eca25bcb8a68f43ac6605559f9",
-      "sourceName": "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol",
-      "solcConfig": {
-        "version": "0.8.20",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "../IERC721.sol"
-      ],
-      "versionPragmas": [
-        ">=0.6.2"
-      ],
-      "artifacts": [
-        "IERC721Metadata"
       ]
     },
     "C:\\Users\\User\\flextix\\node_modules\\@openzeppelin\\contracts\\utils\\math\\Math.sol": {
@@ -764,8 +764,47 @@
       ],
       "artifacts": []
     },
+    "C:\\Users\\User\\flextix\\contracts\\MetaMaskTicket.sol": {
+      "lastModificationDate": 1754641997053,
+      "contentHash": "63eb7018d6f42ca4c8cf04a946b5eea3",
+      "sourceName": "contracts/MetaMaskTicket.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "MetaMaskTicket"
+      ]
+    },
     "C:\\Users\\User\\flextix\\contracts\\EventTicketing.sol": {
-      "lastModificationDate": 1754558909795,
+      "lastModificationDate": 1754641461639,
       "contentHash": "10dbd48e429ecff5b1407079d7a96422",
       "sourceName": "contracts/EventTicketing.sol",
       "solcConfig": {
