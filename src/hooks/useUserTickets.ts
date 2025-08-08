@@ -24,10 +24,10 @@ export const useUserTickets = () => {
       setLoading(true)
       
       // Listen for TicketPurchased events for this user
-      const filter = contract.filters.TicketPurchased(null, null, account)
-      const ticketLogs = await contract.queryFilter(filter)
+      const filter = contract.filters.TicketPurchased(null, null, null, account)
+      const events = await contract.queryFilter(filter)
       
-      const ticketPromises = ticketLogs.map(async (log) => {
+      const ticketPromises = events.map(async (log) => {
         const parsed = contract.interface.parseLog(log)
         const tokenId = Number(parsed?.args.tokenId)
         
