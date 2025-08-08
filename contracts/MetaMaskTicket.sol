@@ -32,7 +32,7 @@ contract MetaMaskTicket is ERC721URIStorage, Ownable {
     }
 
     function checkIn(uint256 tokenId) external {
-        require(_exists(tokenId), "Ticket does not exist");
+        require(_ownerOf(tokenId) != address(0), "Ticket does not exist");
         require(ticketOwner[tokenId] == msg.sender, "Not authorized to check in");
         require(!isCheckedIn[tokenId], "Ticket already checked in");
 
@@ -41,25 +41,30 @@ contract MetaMaskTicket is ERC721URIStorage, Ownable {
         emit TicketCheckedIn(tokenId, msg.sender);
     }
 
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        return super.tokenURI(tokenId);
-    }
+    // Remove the tokenURI override unless you need custom behavior
+    // function tokenURI(uint256 tokenId) public view override returns (string memory) {
+    //     return super.tokenURI(tokenId);
+    // }
 
-    function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
+    // Updated supportsInterface for OpenZeppelin 5.x
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721URIStorage) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
     /**
      * @dev Prevents transfer — makes the ticket soulbound
      */
-    function _beforeTokenTransfer(
-        address from,
+    function _update(
         address to,
         uint256 tokenId,
-        uint256 batchSize
-    ) internal override {
-        // Allow minting only
-        require(from == address(0), "Ticket is non-transferable");
-        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+        address auth
+    ) internal override returns (address) {
+        // Allow minting (from == address(0))
+        // but prevent transfers (from != address(0))
+        address from = _ownerOf(tokenId);
+        if (from != address(0)) {
+            revert("Ticket is non-transferable");
+        }
+        return super._update(to, tokenId, auth);
     }
 }

@@ -765,8 +765,8 @@
       "artifacts": []
     },
     "C:\\Users\\User\\flextix\\contracts\\MetaMaskTicket.sol": {
-      "lastModificationDate": 1754641997053,
-      "contentHash": "63eb7018d6f42ca4c8cf04a946b5eea3",
+      "lastModificationDate": 1754651450126,
+      "contentHash": "519e33c1d05ce4cbd44b99a1a107e4bd",
       "sourceName": "contracts/MetaMaskTicket.sol",
       "solcConfig": {
         "version": "0.8.20",

@@ -7,6 +7,7 @@ import { ethers } from 'ethers'
 
 const MyTickets: React.FC = () => {
   const { tickets, loading } = useUserTickets()
+  console.log("🎟️ Hook return — tickets:", tickets, "loading:", loading)
   const { isConnected, connectWallet } = useWeb3()
 
   const formatDate = (timestamp: number) => {
@@ -94,7 +95,7 @@ const MyTickets: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tickets.map((ticket) => {
+            {tickets.map((ticket, index) => {
               const status = getEventStatus(ticket.event)
               const statusColors = {
                 upcoming: 'bg-blue-500',
@@ -111,7 +112,7 @@ const MyTickets: React.FC = () => {
 
               return (
                 <div
-                  key={ticket.tokenId}
+                  key={`${ticket.tokenId}-${ticket.eventId}-${index}`}
                   className="bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden border border-white/20 hover:border-purple-400 transition-all duration-300 hover:scale-105"
                 >
                   {/* Ticket Header */}

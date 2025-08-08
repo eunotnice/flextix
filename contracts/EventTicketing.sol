@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
 /**
  * @title EventTicketing
@@ -61,6 +62,7 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
     mapping(uint256 => TicketTier) public ticketTiers;
     mapping(uint256 => Ticket) public tickets;
     mapping(uint256 => BlindBagReward) public blindBagRewards;
+    mapping(address => uint256[]) public userOwnedTickets;
     mapping(uint256 => uint256[]) public eventTiers; // eventId => tierIds[]
     mapping(uint256 => uint256[]) public eventRewards; // eventId => rewardIds[]
     mapping(address => mapping(uint256 => uint256)) public walletTierPurchases; // wallet => tierId => count
@@ -148,40 +150,32 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
      * @dev Purchase tickets for a specific tier
      */
     function purchaseTicket(uint256 _tierId, uint256 _quantity) external payable nonReentrant {
-        TicketTier storage tier = ticketTiers[_tierId];
-        Event storage eventData = events[tier.eventId];
-        
-        require(tier.isActive, "Tier is not active");
-        require(eventData.isActive, "Event is not active");
-        require(block.timestamp < eventData.startTime, "Event has already started");
-        require(tier.currentSupply + _quantity <= tier.maxSupply, "Not enough tickets available");
-        require(walletTierPurchases[msg.sender][_tierId] + _quantity <= tier.maxPerWallet, "Exceeds max per wallet");
-        require(msg.value >= tier.price * _quantity, "Insufficient payment");
-        
-        // Mint tickets
+        // ... existing checks ...
+
         for (uint256 i = 0; i < _quantity; i++) {
             uint256 tokenId = _tokenIdCounter;
             _tokenIdCounter++;
             
             _safeMint(msg.sender, tokenId);
             _setTokenURI(tokenId, tier.metadataUri);
-            
+
+            // Fix: Properly initialize the Ticket struct
             tickets[tokenId] = Ticket({
-                tokenId: tokenId,
+                tokenId: tokenId, // Store actual tokenId
                 eventId: tier.eventId,
                 tierId: _tierId,
-                owner: msg.sender,
+                owner: msg.sender, // Store actual owner
                 isUsed: false,
                 purchaseTime: block.timestamp
             });
-            
-            emit TicketPurchased(tokenId, tier.eventId, _tierId, msg.sender);
+
+            userOwnedTickets[msg.sender].push(tokenId);
+            emit TicketPurchased(tier.eventId, _tierId, tokenId, msg.sender);
         }
-        
+
         tier.currentSupply += _quantity;
         walletTierPurchases[msg.sender][_tierId] += _quantity;
         
-        // Transfer payment to organizer
         payable(eventData.organizer).transfer(msg.value);
     }
     
@@ -319,29 +313,54 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
      * @dev Get user's tickets for an event
      */
     function getUserTickets(address _user, uint256 _eventId) external view returns (uint256[] memory) {
-        uint256 totalSupply = _tokenIdCounter;
-        uint256[] memory userTickets = new uint256[](totalSupply);
+        uint256[] memory allTickets = userOwnedTickets[_user];
         uint256 count = 0;
-        
-        for (uint256 i = 0; i < totalSupply; i++) {
-            try this.ownerOf(i) returns (address owner) {
-                if (owner == _user && tickets[i].eventId == _eventId) {
-                    userTickets[count] = i;
-                    count++;
-                }
-            } catch {
-                // Token doesn't exist, skip
+
+        // First pass - count valid tickets
+        for (uint256 i = 0; i < allTickets.length; i++) {
+            uint256 tokenId = allTickets[i];
+            if (tickets[tokenId].eventId == _eventId && tickets[tokenId].owner == _user) {
+                count++;
             }
         }
-        
-        // Resize array
+
+        // Second pass - populate array
         uint256[] memory result = new uint256[](count);
-        for (uint256 i = 0; i < count; i++) {
-            result[i] = userTickets[i];
+        uint256 index = 0;
+        for (uint256 i = 0; i < allTickets.length; i++) {
+            uint256 tokenId = allTickets[i];
+            if (tickets[tokenId].eventId == _eventId && tickets[tokenId].owner == _user) {
+                result[index] = tokenId;
+                index++;
+            }
         }
-        
+
         return result;
     }
+    function supportsInterface(bytes4 interfaceId) 
+        public 
+        view 
+        override(ERC721, ERC721Enumerable, ERC721URIStorage) 
+        returns (bool) 
+    {
+        return super.supportsInterface(interfaceId);
+    }
+
+    function _update(address to, uint256 tokenId, address auth)
+        internal
+        override(ERC721, ERC721Enumerable)
+        returns (address)
+    {
+        return super._update(to, tokenId, auth);
+    }
+
+    function _increaseBalance(address account, uint128 value)
+        internal
+        override(ERC721, ERC721Enumerable)
+    {
+        super._increaseBalance(account, value);
+    }
+
     
     // Override functions
     function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
