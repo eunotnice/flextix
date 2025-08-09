@@ -50,4 +50,9 @@ const contract = await ethers.getContractAt("MetaMaskTicket", "0x4ed7c70F96B99c7
     console.log("Token URI:", uri)
     const uri = await contract.tokenURI(tokenId)
     console.log("Owned tokenId:", tokenId.toString())
-    const tokenId = await contr
+    const tokenId = await contract.tokenOfOwnerByIndex("YOUR_WALLET_ADDRESS", i)
+  for (let i = 0; i < balance; i++) {
+if (balance.gt(0)) {
+// Optional: check the tokenId(s)
+const balanceconsole.log("Ticket balance:", balance.toString())
+const contract = await ethers.getContractAt("MetaMaskTicket", "YOUR_CONTRACT_ADDRESS")
