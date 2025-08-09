@@ -43,7 +43,7 @@ const TicketDetails: React.FC = () => {
     const navigate = useNavigate();
 
     const { isConnected, account, chainId } = useWeb3();
-    const { getTicket, getEvent, getTicketTier, hasClaimedBlindBag, claimBlindBag, contract, loading: contractLoading } = useEventContract();
+    const { getTicket, getEvent, getTicketTier, hasClaimedBlindBag, claimBlindBag, getEventRewardsDetails, getReward, contract, loading: contractLoading } = useEventContract();
 
 
     const [ticket, setTicket] = useState<TicketDetails | null>(null);
@@ -52,6 +52,9 @@ const TicketDetails: React.FC = () => {
     const [hasClaimed, setHasClaimed] = useState<boolean>(false);
     const [claimModalOpen, setClaimModalOpen] = useState<boolean>(false);
     const [claimResult, setClaimResult] = useState<{ txHash: string, rewardId?: number } | null>(null);
+    const [spinPhase, setSpinPhase] = useState<'idle' | 'spinning' | 'result'>('idle');
+    const [rewards, setRewards] = useState<Array<{ rewardId: number; name: string; metadataUri: string; rarity: number }>>([]);
+    const [selectedReward, setSelectedReward] = useState<{ rewardId: number; name: string; metadataUri: string; rarity: number } | null>(null);
     const fetchInProgressRef = useRef(false);
     const lastFetchedIdRef = useRef<string | null>(null);
 
@@ -113,6 +116,8 @@ const TicketDetails: React.FC = () => {
                     try {
                         const claimed = await hasClaimedBlindBag(account, composedTicket.event.eventId);
                         setHasClaimed(claimed);
+                        const evRewards = await getEventRewardsDetails(composedTicket.event.eventId);
+                        setRewards(evRewards);
                     } catch (e) {
                         console.warn('Unable to check lucky draw claim status');
                     }
@@ -243,14 +248,22 @@ const TicketDetails: React.FC = () => {
 
                     {/* Ticket Body */}
                     <div className="p-6">
-                        {/* Event Image */}
+                        {/* Event Image with sticker overlay */}
                         {ticket.event?.imageUri && (
-                            <div className="mb-6 rounded-lg overflow-hidden">
+                            <div className="mb-6 rounded-lg overflow-hidden relative">
                                 <img
                                     src={ticket.event.imageUri}
                                     alt={ticket.event.name}
                                     className="w-full h-48 object-cover"
                                 />
+                                {selectedReward?.metadataUri && (
+                                    <img
+                                        src={selectedReward.metadataUri}
+                                        alt={selectedReward.name}
+                                        className="absolute top-2 right-2 w-14 h-14 rounded-lg shadow-lg border-2 border-yellow-300"
+                                        title={selectedReward.name}
+                                    />
+                                )}
                             </div>
                         )}
 
@@ -383,9 +396,16 @@ const TicketDetails: React.FC = () => {
                             <h2 className="text-xl font-bold mb-3 text-purple-700">Confirm Lucky Draw</h2>
                             {!claimResult ? (
                                 <>
-                                    <p className="text-gray-700 mb-4">
-                                        You have one chance to join the lucky draw for this event. Continue?
-                                    </p>
+                                    {spinPhase === 'spinning' ? (
+                                        <div className="flex flex-col items-center mb-4">
+                                            <div className="w-40 h-40 rounded-full border-8 border-yellow-300 border-t-transparent animate-spin"></div>
+                                            <p className="mt-4 text-purple-800 font-semibold">Spinning...</p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-gray-700 mb-4">
+                                            You have one chance to join the lucky draw for this event. Continue?
+                                        </p>
+                                    )}
                                     <div className="flex justify-end space-x-3">
                                         <button
                                             className="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300"
@@ -398,20 +418,29 @@ const TicketDetails: React.FC = () => {
                                             onClick={async () => {
                                                 if (!ticket?.event) return
                                                 try {
-                                                    setLoading(true)
+                                                    setSpinPhase('spinning')
+                                                    // Artificial spin delay to show wheel
+                                                    await new Promise(res => setTimeout(res, 2000))
+
                                                     const claimedNow = await hasClaimedBlindBag(account!, ticket.event.eventId)
                                                     if (claimedNow) {
                                                         setHasClaimed(true)
                                                         toast.error('Already claimed the lucky draw for this event')
+                                                        setSpinPhase('idle')
                                                         return
                                                     }
                                                     const result = await claimBlindBag(ticket.event.eventId)
                                                     setClaimResult(result)
                                                     setHasClaimed(true)
+
+                                                    if (typeof result.rewardId === 'number') {
+                                                        const reward = await getReward(result.rewardId)
+                                                        if (reward) setSelectedReward(reward)
+                                                    }
+                                                    setSpinPhase('result')
                                                 } catch (e: any) {
                                                     console.error(e)
-                                                } finally {
-                                                    setLoading(false)
+                                                    setSpinPhase('idle')
                                                 }
                                             }}
                                         >
@@ -423,8 +452,12 @@ const TicketDetails: React.FC = () => {
                                 <>
                                     <div className="mb-4">
                                         <h3 className="text-lg font-semibold text-purple-800">Lucky Draw Result</h3>
-                                        {typeof claimResult.rewardId === 'number' ? (
-                                            <p className="text-gray-700">Congratulations! Reward ID: <span className="font-mono">{claimResult.rewardId}</span></p>
+                                        {spinPhase === 'result' && selectedReward ? (
+                                            <div className="flex flex-col items-center">
+                                                <img src={selectedReward.metadataUri} alt={selectedReward.name} className="w-28 h-28 object-cover rounded-lg mb-2" />
+                                                <p className="text-gray-700 font-semibold">{selectedReward.name}</p>
+                                                <p className="text-gray-600 text-sm">Reward ID: <span className="font-mono">{selectedReward.rewardId}</span></p>
+                                            </div>
                                         ) : (
                                             <p className="text-gray-700">Claimed successfully. Check your rewards.</p>
                                         )}
