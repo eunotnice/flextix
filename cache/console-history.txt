@@ -1,3 +1,5 @@
+const contractFactory = await ethers.getContractFactory("EventTicketing")
+const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 console.log(contract.target)
 console.log(contract.address);
 await contract.totalSupply();

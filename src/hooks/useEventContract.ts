@@ -416,6 +416,37 @@ export const useEventContract = () => {
     }
   }
 
+  const hasClaimedBlindBag = async (userAddress: string, eventId: number): Promise<boolean> => {
+    try {
+      if (!contract) return false
+      const result: boolean = await contract.hasClaimedBlindBag(userAddress, eventId)
+      return result
+    } catch (error) {
+      console.error('Error checking hasClaimedBlindBag:', error)
+      return false
+    }
+  }
+
+  const claimBlindBag = async (eventId: number) => {
+    try {
+      setLoading(true)
+      const contractWithSigner = getContractWithSigner()
+      const tx = await contractWithSigner.claimBlindBag(eventId)
+
+      toast.loading('Claiming lucky draw...', { id: 'claim-blindbag' })
+      await tx.wait()
+
+      toast.success('Lucky draw claimed!', { id: 'claim-blindbag' })
+      return tx.hash
+    } catch (error: any) {
+      console.error('Error claiming blind bag:', error)
+      toast.error(error?.reason || error?.message || 'Failed to claim lucky draw', { id: 'claim-blindbag' })
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return {
     contract,
     loading: loading || !contract,
@@ -430,5 +461,7 @@ export const useEventContract = () => {
     getTicket,
     useTicket,
     endEvent
+    ,hasClaimedBlindBag
+    ,claimBlindBag
   }
 }

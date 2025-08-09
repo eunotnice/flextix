@@ -2,12 +2,14 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Ticket, Calendar, MapPin, Clock, ExternalLink, Star } from 'lucide-react'
 import { useUserTickets } from '../hooks/useUserTickets'
+import { useEventContract } from '../hooks/useEventContract'
 import { useWeb3 } from '../context/Web3Context'
 import { ethers } from 'ethers'
 import { QRCodeSVG } from 'qrcode.react'; // Make sure to install: npm install qrcode.react
 
 const MyTickets: React.FC = () => {
   const { tickets, loading } = useUserTickets()
+  const { hasClaimedBlindBag } = useEventContract()
   const { isConnected, connectWallet } = useWeb3()
   const [qrOpen, setQrOpen] = useState(false)
   const [qrTicket, setQrTicket] = useState<any>(null)
@@ -99,6 +101,7 @@ const MyTickets: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tickets.map((ticket, index) => {
               const status = getEventStatus(ticket.event)
+              const showLuckyDot = Boolean(ticket.event && ticket.event.hasEnded)
               const statusColors = {
                 upcoming: 'bg-blue-500',
                 live: 'bg-green-500',
@@ -129,10 +132,14 @@ const MyTickets: React.FC = () => {
                             {ticket.tier?.name || 'General Admission'}
                           </p>
                         </div>
-                        <div className="text-right">
+                         <div className="text-right relative">
                           <span className={`px-2 py-1 rounded-full text-xs font-semibold text-white ${statusColors[status]}`}>
                             {statusLabels[status]}
                           </span>
+                          {/* Red dot for lucky draw eligibility: show if event ended */}
+                          {showLuckyDot && (
+                            <span className="absolute -top-1 -right-1 block h-3 w-3 rounded-full bg-red-500 animate-pulse" title="Lucky draw available"></span>
+                          )}
                         </div>
                       </div>
                     </div>
