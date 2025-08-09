@@ -246,13 +246,48 @@ const Profile = () => {
     }
   ])
 
-  const getRarityColor = (rarity: string) => {
+  const getRarityStyles = (rarity: string) => {
     switch (rarity) {
-      case 'Common': return 'text-gray-600 bg-gray-100 border-gray-300'
-      case 'Rare': return 'text-blue-600 bg-blue-100 border-blue-300'
-      case 'Epic': return 'text-purple-600 bg-purple-100 border-purple-300'
-      case 'Legendary': return 'text-yellow-600 bg-yellow-100 border-yellow-300'
-      default: return 'text-gray-600 bg-gray-100 border-gray-300'
+      case 'Common':
+        return {
+          borderClass: 'border-2 border-gray-300',
+          gradientBorder: '',
+          shadow: 'shadow-lg',
+          badge: 'text-gray-700 bg-gray-100 border-gray-300',
+          animation: ''
+        }
+      case 'Rare':
+        return {
+          borderClass: '',
+          gradientBorder: 'bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-600 p-[3px]',
+          shadow: 'shadow-xl shadow-blue-200/50',
+          badge: 'text-blue-700 bg-blue-100 border-blue-400',
+          animation: 'animate-pulse'
+        }
+      case 'Epic':
+        return {
+          borderClass: '',
+          gradientBorder: 'bg-gradient-to-r from-purple-500 via-pink-500 to-purple-700 p-[4px]',
+          shadow: 'shadow-2xl shadow-purple-300/60',
+          badge: 'text-purple-700 bg-purple-100 border-purple-500',
+          animation: 'animate-pulse'
+        }
+      case 'Legendary':
+        return {
+          borderClass: '',
+          gradientBorder: 'bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-500 p-[4px]',
+          shadow: 'shadow-2xl shadow-amber-300/70',
+          badge: 'text-amber-800 bg-amber-100 border-amber-500',
+          animation: 'animate-pulse'
+        }
+      default:
+        return {
+          borderClass: 'border-2 border-gray-300',
+          gradientBorder: '',
+          shadow: 'shadow-lg',
+          badge: 'text-gray-700 bg-gray-100 border-gray-300',
+          animation: ''
+        }
     }
   }
 
@@ -376,38 +411,46 @@ const Profile = () => {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Connect Your Wallet</h2>
-          <p className="text-gray-600">Please connect your wallet to view your profile</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
+        <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50">
+          <User className="w-20 h-20 text-purple-400 mx-auto mb-6" />
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Connect Your Wallet</h2>
+          <p className="text-gray-600 mb-6">Please connect your wallet to view your profile</p>
+          <button
+            onClick={connectWallet}
+            className="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+          >
+            Connect Wallet
+          </button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen py-12">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Profile Header */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 p-8 mb-8">
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <User className="w-10 h-10 text-white" />
+            <div className="flex items-center space-x-6">
+              <div className="w-24 h-24 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 rounded-full flex items-center justify-center shadow-2xl ring-4 ring-white">
+                <User className="w-12 h-12 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-                <p className="text-gray-600">{account?.slice(0, 6)}...{account?.slice(-4)}</p>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  My Profile
+                </h1>
+                <p className="text-gray-600 text-lg mt-2">{account?.slice(0, 6)}...{account?.slice(-4)}</p>
               </div>
             </div>
-            <div className="flex space-x-3">
-              <button className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
-                <Share2 className="w-4 h-4" />
+            <div className="flex space-x-4">
+              <button className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                <Share2 className="w-5 h-5" />
                 <span>Share Profile</span>
               </button>
-              <button className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
-                <Download className="w-4 h-4" />
+              <button className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-2xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                <Download className="w-5 h-5" />
                 <span>Export</span>
               </button>
             </div>
@@ -415,74 +458,74 @@ const Profile = () => {
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
-            <div className="text-center">
-              <Ticket className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-              <h3 className="text-2xl font-bold text-gray-900">{nftTickets.length}</h3>
-              <p className="text-gray-600">NFT Tickets</p>
+            <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100">
+              <Ticket className="w-10 h-10 text-purple-600 mx-auto mb-3" />
+              <h3 className="text-3xl font-bold text-gray-900">{nftTickets.length}</h3>
+              <p className="text-gray-600 font-medium">NFT Tickets</p>
             </div>
-            <div className="text-center">
-              <Eye className="w-8 h-8 text-green-600 mx-auto mb-2" />
-              <h3 className="text-2xl font-bold text-gray-900">{displayedTickets.length}</h3>
-              <p className="text-gray-600">Displayed</p>
+            <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100">
+              <Eye className="w-10 h-10 text-green-600 mx-auto mb-3" />
+              <h3 className="text-3xl font-bold text-gray-900">{displayedTickets.length}</h3>
+              <p className="text-gray-600 font-medium">Displayed</p>
             </div>
-            <div className="text-center">
-              <Star className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-              <h3 className="text-2xl font-bold text-gray-900">{totalValue.toFixed(2)} ETH</h3>
-              <p className="text-gray-600">Portfolio Value</p>
+            <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100">
+              <Star className="w-10 h-10 text-orange-600 mx-auto mb-3" />
+              <h3 className="text-3xl font-bold text-gray-900">{totalValue.toFixed(2)} ETH</h3>
+              <p className="text-gray-600 font-medium">Portfolio Value</p>
             </div>
-            <div className="text-center">
-              <Calendar className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-              <h3 className="text-2xl font-bold text-gray-900">{totalEventsCreated}</h3>
-              <p className="text-gray-600">Events Created</p>
+            <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100">
+              <Calendar className="w-10 h-10 text-blue-600 mx-auto mb-3" />
+              <h3 className="text-3xl font-bold text-gray-900">{totalEventsCreated}</h3>
+              <p className="text-gray-600 font-medium">Events Created</p>
             </div>
-            <div className="text-center">
-              <Users className="w-8 h-8 text-indigo-600 mx-auto mb-2" />
-              <h3 className="text-2xl font-bold text-gray-900">{totalTicketsSold}</h3>
-              <p className="text-gray-600">Tickets Sold</p>
+            <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100">
+              <Users className="w-10 h-10 text-indigo-600 mx-auto mb-3" />
+              <h3 className="text-3xl font-bold text-gray-900">{totalTicketsSold}</h3>
+              <p className="text-gray-600 font-medium">Tickets Sold</p>
             </div>
-            <div className="text-center">
-              <Trophy className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-              <h3 className="text-2xl font-bold text-gray-900">{totalRevenue.toFixed(1)} ETH</h3>
-              <p className="text-gray-600">Total Revenue</p>
+            <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-yellow-50 to-amber-50 border border-yellow-100">
+              <Trophy className="w-10 h-10 text-yellow-600 mx-auto mb-3" />
+              <h3 className="text-3xl font-bold text-gray-900">{totalRevenue.toFixed(1)} ETH</h3>
+              <p className="text-gray-600 font-medium">Total Revenue</p>
             </div>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+        {/* Enhanced Tab Navigation */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 p-8 mb-8">
+          <div className="flex space-x-2 bg-gradient-to-r from-gray-100 to-gray-200 p-2 rounded-2xl shadow-inner">
             <button
               onClick={() => setActiveTab('collection')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+              className={`flex items-center space-x-3 px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform ${
                 activeTab === 'collection'
-                  ? 'bg-white text-purple-600 shadow-md'
-                  : 'text-gray-600 hover:text-purple-600'
+                  ? 'bg-white text-purple-600 shadow-lg scale-105 ring-2 ring-purple-200'
+                  : 'text-gray-600 hover:text-purple-600 hover:bg-white/50'
               }`}
             >
-              <Ticket className="w-5 h-5" />
-              <span>My Collection</span>
+              <Ticket className="w-6 h-6" />
+              <span className="text-lg">My Collection</span>
             </button>
             <button
               onClick={() => setActiveTab('created-events')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+              className={`flex items-center space-x-3 px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform ${
                 activeTab === 'created-events'
-                  ? 'bg-white text-purple-600 shadow-md'
-                  : 'text-gray-600 hover:text-purple-600'
+                  ? 'bg-white text-purple-600 shadow-lg scale-105 ring-2 ring-purple-200'
+                  : 'text-gray-600 hover:text-purple-600 hover:bg-white/50'
               }`}
             >
-              <Calendar className="w-5 h-5" />
-              <span>My Events</span>
+              <Calendar className="w-6 h-6" />
+              <span className="text-lg">My Events</span>
             </button>
             <button
               onClick={() => setActiveTab('create-event')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+              className={`flex items-center space-x-3 px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform ${
                 activeTab === 'create-event'
-                  ? 'bg-white text-purple-600 shadow-md'
-                  : 'text-gray-600 hover:text-purple-600'
+                  ? 'bg-white text-purple-600 shadow-lg scale-105 ring-2 ring-purple-200'
+                  : 'text-gray-600 hover:text-purple-600 hover:bg-white/50'
               }`}
             >
-              <Plus className="w-5 h-5" />
-              <span>Create Event</span>
+              <Plus className="w-6 h-6" />
+              <span className="text-lg">Create Event</span>
             </button>
           </div>
         </div>
@@ -490,14 +533,14 @@ const Profile = () => {
         {/* Collection Tab */}
         {activeTab === 'collection' && (
           <>
-            {/* Controls */}
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center space-x-4">
+            {/* Enhanced Controls */}
+            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 p-8 mb-8">
+              <div className="flex flex-wrap items-center justify-between gap-6">
+                <div className="flex items-center space-x-6">
                   <select
                     value={filterRarity}
                     onChange={(e) => setFilterRarity(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="px-6 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-purple-200 focus:border-purple-400 bg-white/80 backdrop-blur-sm font-medium text-lg transition-all duration-300"
                   >
                     <option value="all">All Rarities</option>
                     <option value="Common">Common</option>
@@ -506,128 +549,289 @@ const Profile = () => {
                     <option value="Legendary">Legendary</option>
                   </select>
                   
-                  <label className="flex items-center space-x-2">
+                  <label className="flex items-center space-x-3 p-3 rounded-2xl bg-white/60 backdrop-blur-sm border border-gray-200">
                     <input
                       type="checkbox"
                       checked={showOnlyDisplayed}
                       onChange={(e) => setShowOnlyDisplayed(e.target.checked)}
-                      className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                      className="rounded-lg border-gray-300 text-purple-600 focus:ring-purple-500 w-5 h-5"
                     />
-                    <span className="text-gray-700">Show only displayed</span>
+                    <span className="text-gray-700 font-medium">Show only displayed</span>
                   </label>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-600'}`}
+                    className={`p-3 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
+                      viewMode === 'grid' 
+                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg ring-2 ring-purple-300' 
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    }`}
                   >
-                    <Grid className="w-5 h-5" />
+                    <Grid className="w-6 h-6" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-600'}`}
+                    className={`p-3 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
+                      viewMode === 'list' 
+                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg ring-2 ring-purple-300' 
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    }`}
                   >
-                    <List className="w-5 h-5" />
+                    <List className="w-6 h-6" />
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* NFT Collection */}
+            {/* Enhanced NFT Collection */}
             {filteredTickets.length === 0 ? (
-              <div className="text-center py-12">
-                <Ticket className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No NFTs found</h3>
-                <p className="text-gray-600">Try adjusting your filters or purchase some event tickets.</p>
+              <div className="text-center py-16">
+                <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-12 shadow-2xl border border-white/50">
+                  <Ticket className="w-24 h-24 text-purple-400 mx-auto mb-6" />
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">No NFTs found</h3>
+                  <p className="text-gray-600 text-lg">Try adjusting your filters or purchase some event tickets.</p>
+                </div>
               </div>
             ) : (
-              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
-                {filteredTickets.map((ticket) => (
-                  <div key={ticket.id} className={`bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 ${ticket.isDisplayed ? 'ring-2 ring-purple-500' : ''}`}>
-                    {viewMode === 'grid' ? (
-                      <>
-                        <div className="relative">
-                          <img 
-                            src={ticket.eventImage} 
-                            alt={ticket.eventTitle}
-                            className="w-full h-48 object-cover"
-                          />
-                          <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-semibold border ${getRarityColor(ticket.rarity)}`}>
-                            {ticket.rarity}
-                          </div>
-                          <div className="absolute top-3 left-3 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                            #{ticket.tokenId}
-                          </div>
-                          <button
-                            onClick={() => toggleDisplayStatus(ticket.id)}
-                            className={`absolute bottom-3 right-3 p-2 rounded-full ${ticket.isDisplayed ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'} hover:opacity-80 transition-opacity`}
-                          >
-                            {ticket.isDisplayed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                          </button>
-                        </div>
-                        
-                        <div className="p-6">
-                          <h3 className="text-xl font-bold text-gray-900 mb-2">{ticket.eventTitle}</h3>
-                          <p className="text-purple-600 font-semibold mb-2">{ticket.tierName}</p>
-                          <p className="text-gray-600 text-sm mb-4">{ticket.date} • {ticket.location}</p>
-                          
-                          <div className="space-y-2 mb-4">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-500">Venue:</span>
-                              <span className="text-gray-900">{ticket.attributes.venue}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-500">Category:</span>
-                              <span className="text-gray-900">{ticket.attributes.category}</span>
-                            </div>
-                            {ticket.attributes.artist && (
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Artist:</span>
-                                <span className="text-gray-900">{ticket.attributes.artist}</span>
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8' : 'space-y-6'}>
+                {filteredTickets.map((ticket) => {
+                  const rarityStyles = getRarityStyles(ticket.rarity)
+                  
+                  return (
+                    <div key={ticket.id} className={`${rarityStyles.animation}`}>
+                      {/* Gradient Border Wrapper for Rare+ NFTs */}
+                      {rarityStyles.gradientBorder ? (
+                        <div className={`rounded-3xl ${rarityStyles.gradientBorder} ${rarityStyles.shadow} hover:shadow-2xl transition-all duration-500 transform hover:scale-105`}>
+                          <div className="bg-white/90 backdrop-blur-sm rounded-3xl overflow-hidden h-full">
+                            {viewMode === 'grid' ? (
+                              <>
+                                <div className="relative">
+                                  <img 
+                                    src={ticket.eventImage} 
+                                    alt={ticket.eventTitle}
+                                    className="w-full h-56 object-cover"
+                                  />
+                                  <div className={`absolute top-4 right-4 px-3 py-2 rounded-xl text-sm font-bold border-2 backdrop-blur-sm bg-white/80 ${rarityStyles.badge}`}>
+                                    ✨ {ticket.rarity}
+                                  </div>
+                                  <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg">
+                                    #{ticket.tokenId}
+                                  </div>
+                                  <button
+                                    onClick={() => toggleDisplayStatus(ticket.id)}
+                                    className={`absolute bottom-4 right-4 p-3 rounded-xl transition-all duration-300 transform hover:scale-110 shadow-lg ${
+                                      ticket.isDisplayed 
+                                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white ring-2 ring-green-300' 
+                                        : 'bg-gradient-to-r from-gray-500 to-gray-600 text-white ring-2 ring-gray-300'
+                                    }`}
+                                  >
+                                    {ticket.isDisplayed ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                                  </button>
+                                </div>
+                                
+                                <div className="p-8">
+                                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{ticket.eventTitle}</h3>
+                                  <p className="text-purple-600 font-bold text-lg mb-3">{ticket.tierName}</p>
+                                  <p className="text-gray-600 mb-6 flex items-center">
+                                    <Calendar className="w-4 h-4 mr-2" />
+                                    {ticket.date} • {ticket.location}
+                                  </p>
+                                  
+                                  <div className="space-y-3 mb-6 p-4 bg-gradient-to-r from-gray-50 to-purple-50 rounded-2xl">
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-gray-500 font-medium">Venue:</span>
+                                      <span className="text-gray-900 font-semibold">{ticket.attributes.venue}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-gray-500 font-medium">Category:</span>
+                                      <span className="text-gray-900 font-semibold">{ticket.attributes.category}</span>
+                                    </div>
+                                    {ticket.attributes.artist && (
+                                      <div className="flex justify-between text-sm">
+                                        <span className="text-gray-500 font-medium">Artist:</span>
+                                        <span className="text-gray-900 font-semibold">{ticket.attributes.artist}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                                      {ticket.price}
+                                    </span>
+                                    <span className={`px-4 py-2 rounded-xl text-sm font-bold ${
+                                      ticket.isDisplayed 
+                                        ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 ring-1 ring-green-300' 
+                                        : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-600 ring-1 ring-gray-300'
+                                    }`}>
+                                      {ticket.isDisplayed ? '👁️ Displayed' : '🙈 Hidden'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="flex items-center p-8 space-x-6">
+                                <div className="relative">
+                                  <img 
+                                    src={ticket.eventImage} 
+                                    alt={ticket.eventTitle}
+                                    className="w-24 h-24 object-cover rounded-2xl"
+                                  />
+                                  <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${rarityStyles.badge}`}>
+                                    ✨
+                                  </div>
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-3 mb-2">
+                                    <h3 className="text-xl font-bold text-gray-900">{ticket.eventTitle}</h3>
+                                    <span className={`px-3 py-1 rounded-xl text-xs font-bold border-2 ${rarityStyles.badge}`}>
+                                      {ticket.rarity}
+                                    </span>
+                                  </div>
+                                  <p className="text-purple-600 font-bold mb-2">{ticket.tierName}</p>
+                                  <p className="text-gray-600">{ticket.date} • {ticket.location}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-3">
+                                    {ticket.price}
+                                  </p>
+                                  <button
+                                    onClick={() => toggleDisplayStatus(ticket.id)}
+                                    className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 transform hover:scale-105 ${
+                                      ticket.isDisplayed 
+                                        ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 ring-1 ring-green-300' 
+                                        : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-600 ring-1 ring-gray-300'
+                                    }`}
+                                  >
+                                    {ticket.isDisplayed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                                    <span>{ticket.isDisplayed ? 'Displayed' : 'Hidden'}</span>
+                                  </button>
+                                </div>
                               </div>
                             )}
                           </div>
-                          
-                          <div className="flex justify-between items-center">
-                            <span className="text-lg font-bold text-purple-600">{ticket.price}</span>
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${ticket.isDisplayed ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'}`}>
-                              {ticket.isDisplayed ? 'Displayed' : 'Hidden'}
-                            </span>
-                          </div>
                         </div>
-                      </>
-                    ) : (
-                      <div className="flex items-center p-6 space-x-4">
-                        <img 
-                          src={ticket.eventImage} 
-                          alt={ticket.eventTitle}
-                          className="w-20 h-20 object-cover rounded-lg"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <h3 className="text-lg font-bold text-gray-900">{ticket.eventTitle}</h3>
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${getRarityColor(ticket.rarity)}`}>
-                              {ticket.rarity}
-                            </span>
-                          </div>
-                          <p className="text-purple-600 font-semibold mb-1">{ticket.tierName}</p>
-                          <p className="text-gray-600 text-sm">{ticket.date} • {ticket.location}</p>
+                      ) : (
+                        // Regular border for Common NFTs
+                        <div 
+                          className={`
+                            bg-white/90 backdrop-blur-sm rounded-3xl overflow-hidden
+                            hover:shadow-2xl transition-all duration-500 transform hover:scale-105
+                            ${rarityStyles.borderClass} ${rarityStyles.shadow}
+                            ${ticket.isDisplayed ? 'ring-4 ring-purple-300/50' : ''}
+                          `}
+                        >
+                          {viewMode === 'grid' ? (
+                            <>
+                              <div className="relative">
+                                <img 
+                                  src={ticket.eventImage} 
+                                  alt={ticket.eventTitle}
+                                  className="w-full h-56 object-cover"
+                                />
+                                <div className={`absolute top-4 right-4 px-3 py-2 rounded-xl text-sm font-bold border-2 backdrop-blur-sm bg-white/80 ${rarityStyles.badge}`}>
+                                  {ticket.rarity}
+                                </div>
+                                <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg">
+                                  #{ticket.tokenId}
+                                </div>
+                                <button
+                                  onClick={() => toggleDisplayStatus(ticket.id)}
+                                  className={`absolute bottom-4 right-4 p-3 rounded-xl transition-all duration-300 transform hover:scale-110 shadow-lg ${
+                                    ticket.isDisplayed 
+                                      ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white ring-2 ring-green-300' 
+                                      : 'bg-gradient-to-r from-gray-500 to-gray-600 text-white ring-2 ring-gray-300'
+                                  }`}
+                                >
+                                  {ticket.isDisplayed ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                                </button>
+                              </div>
+                              
+                              <div className="p-8">
+                                <h3 className="text-2xl font-bold text-gray-900 mb-3">{ticket.eventTitle}</h3>
+                                <p className="text-purple-600 font-bold text-lg mb-3">{ticket.tierName}</p>
+                                <p className="text-gray-600 mb-6 flex items-center">
+                                  <Calendar className="w-4 h-4 mr-2" />
+                                  {ticket.date} • {ticket.location}
+                                </p>
+                                
+                                <div className="space-y-3 mb-6 p-4 bg-gradient-to-r from-gray-50 to-purple-50 rounded-2xl">
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-gray-500 font-medium">Venue:</span>
+                                    <span className="text-gray-900 font-semibold">{ticket.attributes.venue}</span>
+                                  </div>
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-gray-500 font-medium">Category:</span>
+                                    <span className="text-gray-900 font-semibold">{ticket.attributes.category}</span>
+                                  </div>
+                                  {ticket.attributes.artist && (
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-gray-500 font-medium">Artist:</span>
+                                      <span className="text-gray-900 font-semibold">{ticket.attributes.artist}</span>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="flex justify-between items-center">
+                                  <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                                    {ticket.price}
+                                  </span>
+                                  <span className={`px-4 py-2 rounded-xl text-sm font-bold ${
+                                    ticket.isDisplayed 
+                                      ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 ring-1 ring-green-300' 
+                                      : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-600 ring-1 ring-gray-300'
+                                  }`}>
+                                    {ticket.isDisplayed ? '👁️ Displayed' : '🙈 Hidden'}
+                                  </span>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="flex items-center p-8 space-x-6">
+                              <div className="relative">
+                                <img 
+                                  src={ticket.eventImage} 
+                                  alt={ticket.eventTitle}
+                                  className="w-24 h-24 object-cover rounded-2xl"
+                                />
+                                <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${rarityStyles.badge}`}>
+                                  ⭐
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-3 mb-2">
+                                  <h3 className="text-xl font-bold text-gray-900">{ticket.eventTitle}</h3>
+                                  <span className={`px-3 py-1 rounded-xl text-xs font-bold border-2 ${rarityStyles.badge}`}>
+                                    {ticket.rarity}
+                                  </span>
+                                </div>
+                                <p className="text-purple-600 font-bold mb-2">{ticket.tierName}</p>
+                                <p className="text-gray-600">{ticket.date} • {ticket.location}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-3">
+                                  {ticket.price}
+                                </p>
+                                <button
+                                  onClick={() => toggleDisplayStatus(ticket.id)}
+                                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 transform hover:scale-105 ${
+                                    ticket.isDisplayed 
+                                      ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 ring-1 ring-green-300' 
+                                      : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-600 ring-1 ring-gray-300'
+                                  }`}
+                                >
+                                  {ticket.isDisplayed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                                  <span>{ticket.isDisplayed ? 'Displayed' : 'Hidden'}</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-purple-600 mb-2">{ticket.price}</p>
-                          <button
-                            onClick={() => toggleDisplayStatus(ticket.id)}
-                            className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-semibold ${ticket.isDisplayed ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'}`}
-                          >
-                            {ticket.isDisplayed ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                            <span>{ticket.isDisplayed ? 'Displayed' : 'Hidden'}</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )}
           </>
@@ -637,13 +841,13 @@ const Profile = () => {
         {activeTab === 'created-events' && (
           <>
             {/* Controls */}
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center space-x-4">
+            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 p-8 mb-8">
+              <div className="flex flex-wrap items-center justify-between gap-6">
+                <div className="flex items-center space-x-6">
                   <select
                     value={eventFilter}
                     onChange={(e) => setEventFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="px-6 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-purple-200 focus:border-purple-400 bg-white/80 backdrop-blur-sm font-medium text-lg transition-all duration-300"
                   >
                     <option value="all">All Events</option>
                     <option value="upcoming">Upcoming</option>
@@ -652,18 +856,26 @@ const Profile = () => {
                   </select>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-600'}`}
+                    className={`p-3 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
+                      viewMode === 'grid' 
+                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg ring-2 ring-purple-300' 
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    }`}
                   >
-                    <Grid className="w-5 h-5" />
+                    <Grid className="w-6 h-6" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-600'}`}
+                    className={`p-3 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
+                      viewMode === 'list' 
+                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg ring-2 ring-purple-300' 
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    }`}
                   >
-                    <List className="w-5 h-5" />
+                    <List className="w-6 h-6" />
                   </button>
                 </div>
               </div>
@@ -671,100 +883,102 @@ const Profile = () => {
 
             {/* Created Events */}
             {filteredEvents.length === 0 ? (
-              <div className="text-center py-12">
-                <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No events found</h3>
-                <p className="text-gray-600">Try adjusting your filters or create your first event.</p>
+              <div className="text-center py-16">
+                <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-12 shadow-2xl border border-white/50">
+                  <Calendar className="w-24 h-24 text-purple-400 mx-auto mb-6" />
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">No events found</h3>
+                  <p className="text-gray-600 text-lg">Try adjusting your filters or create your first event.</p>
+                </div>
               </div>
             ) : (
-              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8' : 'space-y-6'}>
                 {filteredEvents.map((event) => (
-                  <div key={event.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300">
+                  <div key={event.id} className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:scale-105 border border-white/50">
                     {viewMode === 'grid' ? (
                       <>
                         <div className="relative">
                           <img 
                             src={event.imageUri} 
                             alt={event.name}
-                            className="w-full h-48 object-cover"
+                            className="w-full h-56 object-cover"
                           />
-                          <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-semibold border ${getStatusColor(event.status)}`}>
+                          <div className={`absolute top-4 right-4 px-3 py-2 rounded-xl text-sm font-bold border-2 backdrop-blur-sm bg-white/80 ${getStatusColor(event.status)}`}>
                             {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
                           </div>
-                          <div className="absolute top-3 left-3 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                          <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg">
                             ID: {event.eventId}
                           </div>
                         </div>
                         
-                        <div className="p-6">
-                          <h3 className="text-xl font-bold text-gray-900 mb-2">{event.name}</h3>
-                          <p className="text-gray-600 text-sm mb-4 line-clamp-2">{event.description}</p>
-                          <p className="text-gray-600 text-sm mb-4">
-                            <MapPin className="w-4 h-4 inline mr-1" />
+                        <div className="p-8">
+                          <h3 className="text-2xl font-bold text-gray-900 mb-3">{event.name}</h3>
+                          <p className="text-gray-600 mb-6 line-clamp-2">{event.description}</p>
+                          <p className="text-gray-600 mb-4 flex items-center">
+                            <MapPin className="w-5 h-5 mr-2" />
                             {event.location}
                           </p>
-                          <p className="text-gray-600 text-sm mb-4">
-                            <Clock className="w-4 h-4 inline mr-1" />
+                          <p className="text-gray-600 mb-6 flex items-center">
+                            <Clock className="w-5 h-5 mr-2" />
                             {event.startDate} {event.endDate && `- ${event.endDate}`}
                           </p>
                           
-                          <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="grid grid-cols-2 gap-6 mb-6 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl">
                             <div className="text-center">
-                              <p className="text-2xl font-bold text-purple-600">{event.totalTicketsSold}</p>
-                              <p className="text-xs text-gray-500">Tickets Sold</p>
+                              <p className="text-3xl font-bold text-purple-600">{event.totalTicketsSold}</p>
+                              <p className="text-sm text-gray-500 font-medium">Tickets Sold</p>
                             </div>
                             <div className="text-center">
-                              <p className="text-2xl font-bold text-green-600">{event.totalRevenue} ETH</p>
-                              <p className="text-xs text-gray-500">Revenue</p>
+                              <p className="text-3xl font-bold text-green-600">{event.totalRevenue} ETH</p>
+                              <p className="text-sm text-gray-500 font-medium">Revenue</p>
                             </div>
                           </div>
 
-                          <div className="space-y-2 mb-4">
+                          <div className="space-y-3 mb-6 p-4 bg-gradient-to-r from-gray-50 to-purple-50 rounded-2xl">
                             {event.tiers.map((tier, index) => (
-                              <div key={index} className="flex justify-between text-sm">
-                                <span className="text-gray-600">{tier.name}:</span>
-                                <span className="text-gray-900">{tier.sold}/{tier.total}</span>
+                              <div key={index} className="flex justify-between">
+                                <span className="text-gray-600 font-medium">{tier.name}:</span>
+                                <span className="text-gray-900 font-bold">{tier.sold}/{tier.total}</span>
                               </div>
                             ))}
                           </div>
                           
-                          <div className="flex space-x-2">
-                            <button className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm">
-                              <BarChart3 className="w-4 h-4" />
-                              <span>Analytics</span>
+                          <div className="flex space-x-3">
+                            <button className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                              <BarChart3 className="w-5 h-5" />
+                              <span className="font-medium">Analytics</span>
                             </button>
-                            <button className="flex items-center justify-center px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-                              <Edit className="w-4 h-4" />
+                            <button className="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-2xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                              <Edit className="w-5 h-5" />
                             </button>
                           </div>
                         </div>
                       </>
                     ) : (
-                      <div className="flex items-center p-6 space-x-4">
+                      <div className="flex items-center p-8 space-x-6">
                         <img 
                           src={event.imageUri} 
                           alt={event.name}
-                          className="w-20 h-20 object-cover rounded-lg"
+                          className="w-24 h-24 object-cover rounded-2xl"
                         />
                         <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <h3 className="text-lg font-bold text-gray-900">{event.name}</h3>
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${getStatusColor(event.status)}`}>
+                          <div className="flex items-center space-x-3 mb-2">
+                            <h3 className="text-xl font-bold text-gray-900">{event.name}</h3>
+                            <span className={`px-3 py-1 rounded-xl text-xs font-bold border-2 ${getStatusColor(event.status)}`}>
                               {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
                             </span>
                           </div>
-                          <p className="text-gray-600 text-sm mb-1">{event.location}</p>
-                          <p className="text-gray-600 text-sm">{event.startDate} {event.endDate && `- ${event.endDate}`}</p>
+                          <p className="text-gray-600 mb-1">{event.location}</p>
+                          <p className="text-gray-600">{event.startDate} {event.endDate && `- ${event.endDate}`}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg font-bold text-purple-600 mb-1">{event.totalTicketsSold} sold</p>
-                          <p className="text-sm text-green-600 font-semibold mb-2">{event.totalRevenue} ETH</p>
-                          <div className="flex space-x-1">
-                            <button className="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                              <BarChart3 className="w-4 h-4" />
+                          <p className="text-xl font-bold text-purple-600 mb-2">{event.totalTicketsSold} sold</p>
+                          <p className="text-lg text-green-600 font-bold mb-4">{event.totalRevenue} ETH</p>
+                          <div className="flex space-x-2">
+                            <button className="p-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                              <BarChart3 className="w-5 h-5" />
                             </button>
-                            <button className="p-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-                              <Edit className="w-4 h-4" />
+                            <button className="p-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-2xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                              <Edit className="w-5 h-5" />
                             </button>
                           </div>
                         </div>
@@ -781,49 +995,49 @@ const Profile = () => {
         {activeTab === 'create-event' && (
           <form onSubmit={handleCreateEvent} className="space-y-8">
             {/* Basic Event Information */}
-            <div className="rounded-3xl bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <Calendar className="h-6 w-6 mr-3 text-purple-600" />
+            <div className="rounded-3xl bg-white/90 backdrop-blur-sm border border-white/50 shadow-2xl p-10">
+              <h2 className="text-3xl font-bold text-gray-800 mb-8 flex items-center">
+                <Calendar className="h-8 w-8 mr-4 text-purple-600" />
                 Event Details
               </h2>
               
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-8">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-lg font-semibold text-gray-700 mb-3">
                     Event Name *
                   </label>
                   <input
                     type="text"
                     value={eventData.name}
                     onChange={(e) => handleEventDataChange('name', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-6 py-4 rounded-2xl bg-white/60 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 text-lg transition-all duration-300"
                     placeholder="Enter event name"
                     required
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-lg font-semibold text-gray-700 mb-3">
                     Description *
                   </label>
                   <textarea
                     value={eventData.description}
                     onChange={(e) => handleEventDataChange('description', e.target.value)}
                     rows={4}
-                    className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    className="w-full px-6 py-4 rounded-2xl bg-white/60 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 resize-none text-lg transition-all duration-300"
                     placeholder="Describe your event"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-lg font-semibold text-gray-700 mb-3">
                     Category
                   </label>
                   <select
                     value={eventData.category}
                     onChange={(e) => handleEventDataChange('category', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-6 py-4 rounded-2xl bg-white/60 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 text-lg transition-all duration-300"
                   >
                     {categories.map(category => (
                       <option key={category.value} value={category.value}>
@@ -834,91 +1048,91 @@ const Profile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-lg font-semibold text-gray-700 mb-3">
                     Event Image URL
                   </label>
                   <input
                     type="url"
                     value={eventData.imageUri}
                     onChange={(e) => handleEventDataChange('imageUri', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-6 py-4 rounded-2xl bg-white/60 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 text-lg transition-all duration-300"
                     placeholder="https://example.com/image.jpg"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <MapPin className="h-4 w-4 inline mr-1" />
+                  <label className="block text-lg font-semibold text-gray-700 mb-3">
+                    <MapPin className="h-5 w-5 inline mr-2" />
                     Location
                   </label>
                   <input
                     type="text"
                     value={eventData.location}
                     onChange={(e) => handleEventDataChange('location', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-6 py-4 rounded-2xl bg-white/60 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 text-lg transition-all duration-300"
                     placeholder="Event location or 'Virtual Event'"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-lg font-semibold text-gray-700 mb-3">
                     Start Date *
                   </label>
                   <input
                     type="date"
                     value={eventData.startDate}
                     onChange={(e) => handleEventDataChange('startDate', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-6 py-4 rounded-2xl bg-white/60 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 text-lg transition-all duration-300"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-lg font-semibold text-gray-700 mb-3">
                     Start Time *
                   </label>
                   <input
                     type="time"
                     value={eventData.startTime}
                     onChange={(e) => handleEventDataChange('startTime', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-6 py-4 rounded-2xl bg-white/60 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 text-lg transition-all duration-300"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-lg font-semibold text-gray-700 mb-3">
                     End Date
                   </label>
                   <input
                     type="date"
                     value={eventData.endDate}
                     onChange={(e) => handleEventDataChange('endDate', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-6 py-4 rounded-2xl bg-white/60 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 text-lg transition-all duration-300"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-lg font-semibold text-gray-700 mb-3">
                     End Time
                   </label>
                   <input
                     type="time"
                     value={eventData.endTime}
                     onChange={(e) => handleEventDataChange('endTime', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-6 py-4 rounded-2xl bg-white/60 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 text-lg transition-all duration-300"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-lg font-semibold text-gray-700 mb-3">
                     Website URL
                   </label>
                   <input
                     type="url"
                     value={eventData.website}
                     onChange={(e) => handleEventDataChange('website', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-6 py-4 rounded-2xl bg-white/60 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 text-lg transition-all duration-300"
                     placeholder="https://your-event-website.com"
                   />
                 </div>
@@ -926,57 +1140,57 @@ const Profile = () => {
             </div>
 
             {/* Ticket Tiers */}
-            <div className="rounded-3xl bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-                  <DollarSign className="h-6 w-6 mr-3 text-purple-600" />
+            <div className="rounded-3xl bg-white/90 backdrop-blur-sm border border-white/50 shadow-2xl p-10">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-3xl font-bold text-gray-800 flex items-center">
+                  <DollarSign className="h-8 w-8 mr-4 text-purple-600" />
                   Ticket Tiers
                 </h2>
                 <button
                   type="button"
                   onClick={addTier}
-                  className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-purple-500/20 text-purple-700 hover:bg-purple-500/30 transition-all duration-200"
+                  className="flex items-center space-x-3 px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
-                  <Plus className="h-4 w-4" />
-                  <span>Add Tier</span>
+                  <Plus className="h-5 w-5" />
+                  <span className="font-medium">Add Tier</span>
                 </button>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {ticketTiers.map((tier, index) => (
-                  <div key={index} className="p-6 rounded-2xl bg-white/30 backdrop-blur-sm border border-white/40">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-gray-800">
+                  <div key={index} className="p-8 rounded-3xl bg-white/60 backdrop-blur-sm border-2 border-gray-200 shadow-lg">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-2xl font-bold text-gray-800">
                         Tier {index + 1}
                       </h3>
                       {ticketTiers.length > 1 && (
                         <button
                           type="button"
                           onClick={() => removeTier(index)}
-                          className="p-2 rounded-lg text-red-600 hover:bg-red-100/50 transition-colors"
+                          className="p-3 rounded-2xl text-red-600 hover:bg-red-100 transition-all duration-300 transform hover:scale-105"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-5 w-5" />
                         </button>
                       )}
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-lg font-semibold text-gray-700 mb-3">
                           Tier Name *
                         </label>
                         <input
                           type="text"
                           value={tier.name}
                           onChange={(e) => handleTierChange(index, 'name', e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="w-full px-6 py-4 rounded-2xl bg-white/80 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 text-lg transition-all duration-300"
                           placeholder="e.g., General Admission"
                           required
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-lg font-semibold text-gray-700 mb-3">
                           Price (ETH) *
                         </label>
                         <input
@@ -985,14 +1199,14 @@ const Profile = () => {
                           min="0"
                           value={tier.price}
                           onChange={(e) => handleTierChange(index, 'price', e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="w-full px-6 py-4 rounded-2xl bg-white/80 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 text-lg transition-all duration-300"
                           placeholder="0.1"
                           required
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-lg font-semibold text-gray-700 mb-3">
                           Max Supply *
                         </label>
                         <input
@@ -1000,14 +1214,14 @@ const Profile = () => {
                           min="1"
                           value={tier.maxSupply}
                           onChange={(e) => handleTierChange(index, 'maxSupply', e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="w-full px-6 py-4 rounded-2xl bg-white/80 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 text-lg transition-all duration-300"
                           placeholder="1000"
                           required
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-lg font-semibold text-gray-700 mb-3">
                           Max Per Wallet
                         </label>
                         <input
@@ -1015,20 +1229,20 @@ const Profile = () => {
                           min="1"
                           value={tier.maxPerWallet}
                           onChange={(e) => handleTierChange(index, 'maxPerWallet', e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="w-full px-6 py-4 rounded-2xl bg-white/80 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 text-lg transition-all duration-300"
                           placeholder="5"
                         />
                       </div>
 
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-lg font-semibold text-gray-700 mb-3">
                           Description
                         </label>
                         <textarea
                           value={tier.description}
                           onChange={(e) => handleTierChange(index, 'description', e.target.value)}
-                          rows={2}
-                          className="w-full px-4 py-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                          rows={3}
+                          className="w-full px-6 py-4 rounded-2xl bg-white/80 backdrop-blur-sm border-2 border-gray-200 focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 resize-none text-lg transition-all duration-300"
                           placeholder="Describe what this tier includes"
                         />
                       </div>
@@ -1043,14 +1257,14 @@ const Profile = () => {
               <button
                 type="submit"
                 disabled={isCreatingEvent || !isConnected}
-                className="inline-flex items-center space-x-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                className="inline-flex items-center space-x-4 px-12 py-5 rounded-3xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 text-white hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 shadow-2xl hover:shadow-purple-300/50 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 text-xl font-bold"
               >
                 {isCreatingEvent ? (
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
                 ) : (
-                  <Save className="h-6 w-6" />
+                  <Save className="h-8 w-8" />
                 )}
-                <span className="text-lg font-semibold">
+                <span>
                   {isCreatingEvent ? 'Creating Event...' : 'Create Event'}
                 </span>
               </button>
