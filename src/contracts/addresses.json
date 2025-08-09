@@ -1,8 +1,8 @@
 {
-  "EventTicketing": "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d",
-  "BlindBagNFT": "0x59b670e9fA9D0A427751Af201D676719a970857b",
+  "EventTicketing": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "BlindBagNFT": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
   "MetaMaskTicket": {
-    "target": "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1",
+    "target": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
     "interface": {
       "fragments": [
         {
@@ -322,6 +322,31 @@
               "arrayChildren": null
             },
             {
+              "name": "owner",
+              "type": "address",
+              "baseType": "address",
+              "indexed": true,
+              "components": null,
+              "arrayLength": null,
+              "arrayChildren": null
+            }
+          ],
+          "name": "TicketCheckedIn",
+          "anonymous": false
+        },
+        {
+          "type": "event",
+          "inputs": [
+            {
+              "name": "tokenId",
+              "type": "uint256",
+              "baseType": "uint256",
+              "indexed": true,
+              "components": null,
+              "arrayLength": null,
+              "arrayChildren": null
+            },
+            {
               "name": "to",
               "type": "address",
               "baseType": "address",
@@ -444,6 +469,25 @@
               "arrayChildren": null
             }
           ],
+          "name": "checkIn",
+          "constant": false,
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "payable": false,
+          "gas": null
+        },
+        {
+          "type": "function",
+          "inputs": [
+            {
+              "name": "tokenId",
+              "type": "uint256",
+              "baseType": "uint256",
+              "components": null,
+              "arrayLength": null,
+              "arrayChildren": null
+            }
+          ],
           "name": "getApproved",
           "constant": true,
           "outputs": [
@@ -481,6 +525,34 @@
             }
           ],
           "name": "isApprovedForAll",
+          "constant": true,
+          "outputs": [
+            {
+              "name": "",
+              "type": "bool",
+              "baseType": "bool",
+              "components": null,
+              "arrayLength": null,
+              "arrayChildren": null
+            }
+          ],
+          "stateMutability": "view",
+          "payable": false,
+          "gas": null
+        },
+        {
+          "type": "function",
+          "inputs": [
+            {
+              "name": "",
+              "type": "uint256",
+              "baseType": "uint256",
+              "components": null,
+              "arrayLength": null,
+              "arrayChildren": null
+            }
+          ],
+          "name": "isCheckedIn",
           "constant": true,
           "outputs": [
             {
@@ -751,6 +823,34 @@
               "name": "",
               "type": "string",
               "baseType": "string",
+              "components": null,
+              "arrayLength": null,
+              "arrayChildren": null
+            }
+          ],
+          "stateMutability": "view",
+          "payable": false,
+          "gas": null
+        },
+        {
+          "type": "function",
+          "inputs": [
+            {
+              "name": "",
+              "type": "uint256",
+              "baseType": "uint256",
+              "components": null,
+              "arrayLength": null,
+              "arrayChildren": null
+            }
+          ],
+          "name": "ticketOwner",
+          "constant": true,
+          "outputs": [
+            {
+              "name": "",
+              "type": "address",
+              "baseType": "address",
               "components": null,
               "arrayLength": null,
               "arrayChildren": null
