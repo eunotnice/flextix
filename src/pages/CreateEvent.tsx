@@ -16,7 +16,7 @@ interface TicketTierForm {
 const CreateEvent: React.FC = () => {
   const navigate = useNavigate()
   const { isConnected, connectWallet } = useWeb3()
-  const { createEvent, createTicketTier, loading } = useEventContract()
+  const { createEvent, createTicketTier, createBlindBagReward, loading } = useEventContract()
 
   const [formData, setFormData] = useState({
     name: '',
@@ -39,7 +39,10 @@ const CreateEvent: React.FC = () => {
   ])
 
   type StickerForm = { name: string; imageUri: string; percentage: number }
-  const [stickers, setStickers] = useState<StickerForm[]>([{ name: '', imageUri: '', percentage: 0 }]);
+  const [stickers, setStickers] = useState<StickerForm[]>([
+    { name: '', imageUri: '', percentage: 50 },
+    { name: '', imageUri: '', percentage: 50 }
+  ]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -100,17 +103,21 @@ const CreateEvent: React.FC = () => {
       // Use a default image if none provided
       const imageUri = formData.imageUri || `https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=400&fit=crop`
 
-      // Validate stickers: must have at least one; sum percentages to 100
+      // Validate stickers: must have at least 2; each 1..99; sum percentages to exactly 100
       const cleanedStickers = stickers
         .map(s => ({ name: s.name.trim(), imageUri: s.imageUri.trim(), percentage: Number(s.percentage) }))
         .filter(s => s.name && s.imageUri && !Number.isNaN(s.percentage))
-      if (cleanedStickers.length === 0) {
-        toast.error('Please add at least one sticker with name, image and percentage')
+      if (cleanedStickers.length < 2) {
+        toast.error('Please add at least two stickers (name, image, percentage)')
+        return
+      }
+      if (cleanedStickers.some(s => !Number.isInteger(s.percentage) || s.percentage < 1 || s.percentage > 99)) {
+        toast.error('Each sticker percentage must be an integer between 1 and 99')
         return
       }
       const totalPct = cleanedStickers.reduce((sum, s) => sum + s.percentage, 0)
       if (totalPct !== 100) {
-        toast.error('Sticker percentages must add up to 100')
+        toast.error('Sticker percentages must add up to exactly 100')
         return
       }
 
@@ -124,6 +131,11 @@ const CreateEvent: React.FC = () => {
         endDateTime,
         cleanedStickers  // pass structured stickers
       )
+
+      // Create stickers (blind bag rewards) on-chain
+      for (const s of cleanedStickers) {
+        await createBlindBagReward(eventId, s.name, s.imageUri, s.percentage)
+      }
 
       // Create ticket tiers
       for (const tier of ticketTiers) {
@@ -425,17 +437,17 @@ const CreateEvent: React.FC = () => {
 
             <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-white">Stickers</h2>
+                <h2 className="text-2xl font-bold text-white">Stickers (min 2)</h2>
                 <button
                   type="button"
-                  onClick={() => setStickers(prev => [...prev, { name: '', imageUri: '', percentage: 0 }])}
+                  onClick={() => setStickers(prev => [...prev, { name: '', imageUri: '', percentage: 1 }])}
                   className="flex items-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl transition-colors"
                 >
                   <Plus className="w-4 h-4 mr-2" /> Add Sticker
                 </button>
               </div>
 
-              <p className="text-purple-200 text-sm mb-4">Percentages are used for future lucky draw odds. Total must equal 100.</p>
+              <p className="text-purple-200 text-sm mb-4">Percentages are used for future lucky draw odds. Each must be 1–99 and total must equal 100.</p>
 
               <div className="space-y-4">
                 {stickers.map((s, i) => (
@@ -466,12 +478,13 @@ const CreateEvent: React.FC = () => {
                       <label className="block text-white font-semibold mb-2">Percentage</label>
                       <input
                         type="number"
-                        min={0}
-                        max={100}
+                        min={1}
+                        max={99}
+                        step={1}
                         value={s.percentage}
                         onChange={(e) => {
                           const val = Number(e.target.value)
-                          if (!Number.isNaN(val) && val >= 0 && val <= 100) {
+                          if (!Number.isNaN(val) && val >= 1 && val <= 99) {
                             setStickers(prev => prev.map((x, idx) => idx === i ? { ...x, percentage: val } : x))
                           }
                         }}
@@ -480,7 +493,7 @@ const CreateEvent: React.FC = () => {
                       />
                     </div>
                     <div className="md:col-span-12 flex justify-end">
-                      {stickers.length > 1 && (
+                      {stickers.length > 2 && (
                         <button
                           type="button"
                           onClick={() => setStickers(prev => prev.filter((_, idx) => idx !== i))}
@@ -492,6 +505,19 @@ const CreateEvent: React.FC = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Total percentage indicator */}
+              <div className="mt-4 text-right">
+                {(() => {
+                  const total = stickers.reduce((sum, s) => sum + Number(s.percentage || 0), 0)
+                  const ok = total === 100
+                  return (
+                    <span className={`text-sm font-semibold ${ok ? 'text-green-300' : 'text-red-300'}`}>
+                      Total: {total}% {ok ? '' : '(must equal 100%)'}
+                    </span>
+                  )
+                })()}
               </div>
             </div>
 

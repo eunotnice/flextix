@@ -42,6 +42,15 @@ export interface TicketTier {
   isActive: boolean
 }
 
+export interface BlindBagReward {
+  rewardId: number
+  eventId: number
+  name: string
+  metadataUri: string
+  rarity: number
+  isActive: boolean
+}
+
 export interface Ticket {
   tokenId: number
   eventId: number
@@ -163,8 +172,7 @@ export const useEventContract = () => {
         description,
         imageUri,
         startTimestamp,
-        endTimestamp, 
-        [] // Stickers not yet supported by deployed contract ABI; ignored for now
+        endTimestamp
       )
 
       toast.loading('Creating event...', { id: 'create-event' })
@@ -260,6 +268,30 @@ export const useEventContract = () => {
     }
   }
 
+  const createBlindBagReward = async (
+    eventId: number,
+    name: string,
+    metadataUri: string,
+    percentage: number
+  ) => {
+    try {
+      setLoading(true)
+      const contractWithSigner = getContractWithSigner()
+      const rarity = Math.max(1, Math.min(100, Math.floor(percentage)))
+      const tx = await contractWithSigner.createBlindBagReward(eventId, name, metadataUri, rarity)
+      toast.loading('Creating sticker...', { id: `create-sticker-${name}` })
+      const receipt = await tx.wait()
+      toast.success('Sticker created', { id: `create-sticker-${name}` })
+      return { txHash: tx.hash }
+    } catch (error: any) {
+      console.error('Error creating blind bag reward:', error)
+      toast.error(error?.reason || error?.message || 'Failed to create sticker')
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const purchaseTicket = async (tierId: number, quantity: number, totalPrice: string) => {
     try {
       setLoading(true)
@@ -342,6 +374,48 @@ export const useEventContract = () => {
     } catch (error) {
       console.error('Error getting event tiers:', error)
       return []
+    }
+  }
+
+  const getEventRewardsDetails = async (eventId: number): Promise<BlindBagReward[]> => {
+    try {
+      if (!contract) return []
+      const rewardIds: bigint[] = await contract.getEventRewards(eventId)
+      const details = await Promise.all(
+        rewardIds.map(async (id) => {
+          const info = await contract.blindBagRewards(Number(id))
+          return {
+            rewardId: Number(info.rewardId),
+            eventId: Number(info.eventId),
+            name: info.name,
+            metadataUri: info.metadataUri,
+            rarity: Number(info.rarity),
+            isActive: Boolean(info.isActive)
+          } as BlindBagReward
+        })
+      )
+      return details.filter(r => r.isActive)
+    } catch (error) {
+      console.error('Error getting event rewards details:', error)
+      return []
+    }
+  }
+
+  const getReward = async (rewardId: number): Promise<BlindBagReward | null> => {
+    try {
+      if (!contract) return null
+      const info = await contract.blindBagRewards(rewardId)
+      return {
+        rewardId: Number(info.rewardId),
+        eventId: Number(info.eventId),
+        name: info.name,
+        metadataUri: info.metadataUri,
+        rarity: Number(info.rarity),
+        isActive: Boolean(info.isActive)
+      }
+    } catch (error) {
+      console.error('Error getting reward:', error)
+      return null
     }
   }
 
@@ -479,6 +553,9 @@ export const useEventContract = () => {
     getEvent,
     getTicketTier,
     getEventTiers,
+    createBlindBagReward,
+    getEventRewardsDetails,
+    getReward,
     getUserTickets,
     getTicket,
     useTicket,
