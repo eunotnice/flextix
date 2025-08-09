@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useRef } from 'react';
+=======
+import React, { useState, useEffect } from 'react';
+>>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
 import { useParams, useNavigate } from 'react-router-dom';
 import { Ticket, Calendar, MapPin, Clock, ExternalLink, Star, ArrowLeft } from 'lucide-react';
 import { useEventContract } from '../hooks/useEventContract';
@@ -16,15 +20,21 @@ interface TicketDetails {
     isUsed: boolean;
     purchaseTime: number;
     event?: {
+<<<<<<< HEAD
         eventId: number;
+=======
+>>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
         name: string;
         description: string;
         imageUri: string;
         startTime: number;
         endTime: number;
         organizer: string;
+<<<<<<< HEAD
         isActive?: boolean;
         hasEnded?: boolean;
+=======
+>>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
     };
     tier?: {
         name: string;
@@ -37,17 +47,26 @@ const TicketDetails: React.FC = () => {
     console.log('TicketDetails component loaded with id:', id);
 
     const navigate = useNavigate();
+<<<<<<< HEAD
     const { isConnected, account, chainId } = useWeb3();
     const { getTicket, getEvent, getTicketTier, hasClaimedBlindBag, claimBlindBag, contract, loading: contractLoading } = useEventContract();
+=======
+    const { isConnected, account } = useWeb3();
+    const { getTicket, getEvent, getTicketTier } = useEventContract();
+>>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
 
     const [ticket, setTicket] = useState<TicketDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [qrOpen, setQrOpen] = useState(false);
+<<<<<<< HEAD
     const [hasClaimed, setHasClaimed] = useState<boolean>(false);
     const fetchInProgressRef = useRef(false);
     const lastFetchedIdRef = useRef<string | null>(null);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
+=======
+
+>>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
     useEffect(() => {
         const fetchTicketData = async () => {
             if (!id) {
@@ -56,6 +75,7 @@ const TicketDetails: React.FC = () => {
                 return;
             }
 
+<<<<<<< HEAD
             // Wait for contract to be ready
             if (contractLoading || !contract) {
                 console.log('⏳ Contract not ready yet. Waiting to fetch ticket...');
@@ -75,6 +95,10 @@ const TicketDetails: React.FC = () => {
             try {
                 setLoading(true);
                 fetchingRef.current = true;
+=======
+            try {
+                setLoading(true);
+>>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
                 const ticketId = parseInt(id);
 
                 // Fetch basic ticket info
@@ -93,6 +117,7 @@ const TicketDetails: React.FC = () => {
                     getTicketTier(ticketData.tierId)
                 ]);
 
+<<<<<<< HEAD
                 const composedTicket = {
                     ...ticketData,
                     event: eventData || undefined,
@@ -109,6 +134,13 @@ const TicketDetails: React.FC = () => {
                         console.warn('Unable to check lucky draw claim status');
                     }
                 }
+=======
+                setTicket({
+                    ...ticketData,
+                    event: eventData || undefined,
+                    tier: tierData || undefined
+                });
+>>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
 
             } catch (error) {
                 console.error('Error fetching ticket data:', error);
@@ -116,13 +148,20 @@ const TicketDetails: React.FC = () => {
                 navigate('/my-tickets');
             } finally {
                 setLoading(false);
+<<<<<<< HEAD
                 fetchInProgressRef.current = false;
                 lastFetchedIdRef.current = id ?? null;
+=======
+>>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
             }
         };
 
         fetchTicketData();
+<<<<<<< HEAD
     }, [id, contract, contractLoading, account]);
+=======
+    }, [id, getTicket, getEvent, getTicketTier, navigate]);
+>>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
 
     const formatDate = (timestamp: number) => {
         return new Date(timestamp * 1000).toLocaleDateString('en-US', {
@@ -134,6 +173,7 @@ const TicketDetails: React.FC = () => {
         });
     };
 
+<<<<<<< HEAD
     const getNetworkName = (id: number | null | undefined) => {
         switch (id) {
             case 31337: return 'Hardhat Local';
@@ -152,6 +192,8 @@ const TicketDetails: React.FC = () => {
         }
     };
 
+=======
+>>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pt-20">
@@ -208,6 +250,7 @@ const TicketDetails: React.FC = () => {
                                 </p>
                             </div>
                             <div className="text-right">
+<<<<<<< HEAD
                                 <div className="mb-2">
                                     <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-white/20 text-white">
                                         Ticket #{ticket.tokenId}
@@ -240,6 +283,11 @@ const TicketDetails: React.FC = () => {
                                         {hasClaimed ? 'Drawed' : 'Claim Lucky Draw'}
                                     </button>
                                 )}
+=======
+                                <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-white/20 text-white">
+                                    Ticket #{ticket.tokenId}
+                                </span>
+>>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
                             </div>
                         </div>
                     </div>
@@ -278,6 +326,7 @@ const TicketDetails: React.FC = () => {
                             </div>
 
                             <div className="flex items-start text-purple-200">
+<<<<<<< HEAD
                                 <Calendar className="w-5 h-5 mr-3 mt-1" />
                                 <div>
                                     <div className="font-semibold">End Date</div>
@@ -288,6 +337,8 @@ const TicketDetails: React.FC = () => {
                             </div>
 
                             <div className="flex items-start text-purple-200">
+=======
+>>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
                                 <ExternalLink className="w-5 h-5 mr-3 mt-1" />
                                 <div>
                                     <div className="font-semibold">Ticket ID</div>
@@ -314,6 +365,7 @@ const TicketDetails: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+<<<<<<< HEAD
 
                             <div className="flex items-start text-purple-200">
                                 <ExternalLink className="w-5 h-5 mr-3 mt-1" />
@@ -322,6 +374,8 @@ const TicketDetails: React.FC = () => {
                                     <div className="text-sm">{getNetworkName(chainId)}{chainId ? ` (Chain ID: ${chainId})` : ''}</div>
                                 </div>
                             </div>
+=======
+>>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
                         </div>
 
                         {/* Owner Info */}
