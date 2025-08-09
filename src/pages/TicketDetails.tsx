@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import React, { useState, useEffect, useRef } from 'react';
-=======
-import React, { useState, useEffect } from 'react';
->>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
 import { useParams, useNavigate } from 'react-router-dom';
 import { Ticket, Calendar, MapPin, Clock, ExternalLink, Star, ArrowLeft } from 'lucide-react';
 import { useEventContract } from '../hooks/useEventContract';
@@ -20,21 +16,19 @@ interface TicketDetails {
     isUsed: boolean;
     purchaseTime: number;
     event?: {
-<<<<<<< HEAD
+
         eventId: number;
-=======
->>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
+
         name: string;
         description: string;
         imageUri: string;
         startTime: number;
         endTime: number;
         organizer: string;
-<<<<<<< HEAD
+
         isActive?: boolean;
         hasEnded?: boolean;
-=======
->>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
+
     };
     tier?: {
         name: string;
@@ -47,26 +41,21 @@ const TicketDetails: React.FC = () => {
     console.log('TicketDetails component loaded with id:', id);
 
     const navigate = useNavigate();
-<<<<<<< HEAD
+
     const { isConnected, account, chainId } = useWeb3();
     const { getTicket, getEvent, getTicketTier, hasClaimedBlindBag, claimBlindBag, contract, loading: contractLoading } = useEventContract();
-=======
-    const { isConnected, account } = useWeb3();
-    const { getTicket, getEvent, getTicketTier } = useEventContract();
->>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
+
 
     const [ticket, setTicket] = useState<TicketDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [qrOpen, setQrOpen] = useState(false);
-<<<<<<< HEAD
     const [hasClaimed, setHasClaimed] = useState<boolean>(false);
+    const [claimModalOpen, setClaimModalOpen] = useState<boolean>(false);
+    const [claimResult, setClaimResult] = useState<{ txHash: string, rewardId?: number } | null>(null);
     const fetchInProgressRef = useRef(false);
     const lastFetchedIdRef = useRef<string | null>(null);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-=======
-
->>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
     useEffect(() => {
         const fetchTicketData = async () => {
             if (!id) {
@@ -75,7 +64,6 @@ const TicketDetails: React.FC = () => {
                 return;
             }
 
-<<<<<<< HEAD
             // Wait for contract to be ready
             if (contractLoading || !contract) {
                 console.log('⏳ Contract not ready yet. Waiting to fetch ticket...');
@@ -95,10 +83,6 @@ const TicketDetails: React.FC = () => {
             try {
                 setLoading(true);
                 fetchingRef.current = true;
-=======
-            try {
-                setLoading(true);
->>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
                 const ticketId = parseInt(id);
 
                 // Fetch basic ticket info
@@ -117,7 +101,6 @@ const TicketDetails: React.FC = () => {
                     getTicketTier(ticketData.tierId)
                 ]);
 
-<<<<<<< HEAD
                 const composedTicket = {
                     ...ticketData,
                     event: eventData || undefined,
@@ -134,13 +117,6 @@ const TicketDetails: React.FC = () => {
                         console.warn('Unable to check lucky draw claim status');
                     }
                 }
-=======
-                setTicket({
-                    ...ticketData,
-                    event: eventData || undefined,
-                    tier: tierData || undefined
-                });
->>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
 
             } catch (error) {
                 console.error('Error fetching ticket data:', error);
@@ -148,20 +124,13 @@ const TicketDetails: React.FC = () => {
                 navigate('/my-tickets');
             } finally {
                 setLoading(false);
-<<<<<<< HEAD
                 fetchInProgressRef.current = false;
                 lastFetchedIdRef.current = id ?? null;
-=======
->>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
             }
         };
 
         fetchTicketData();
-<<<<<<< HEAD
     }, [id, contract, contractLoading, account]);
-=======
-    }, [id, getTicket, getEvent, getTicketTier, navigate]);
->>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
 
     const formatDate = (timestamp: number) => {
         return new Date(timestamp * 1000).toLocaleDateString('en-US', {
@@ -173,7 +142,6 @@ const TicketDetails: React.FC = () => {
         });
     };
 
-<<<<<<< HEAD
     const getNetworkName = (id: number | null | undefined) => {
         switch (id) {
             case 31337: return 'Hardhat Local';
@@ -192,8 +160,6 @@ const TicketDetails: React.FC = () => {
         }
     };
 
-=======
->>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pt-20">
@@ -250,44 +216,27 @@ const TicketDetails: React.FC = () => {
                                 </p>
                             </div>
                             <div className="text-right">
-<<<<<<< HEAD
                                 <div className="mb-2">
                                     <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-white/20 text-white">
                                         Ticket #{ticket.tokenId}
                                     </span>
                                 </div>
                                 {/* Lucky Draw action */}
-                                {ticket.event && ticket.event.hasEnded && (
-                                    <button
-                                        disabled={hasClaimed}
-                                        onClick={async () => {
-                                            if (!ticket?.event) return
-                                            try {
-                                                setLoading(true)
-                                                const claimedNow = await hasClaimedBlindBag(account!, ticket.event.eventId)
-                                                if (claimedNow) {
-                                                    setHasClaimed(true)
-                                                    toast.error('Already claimed the lucky draw for this event')
-                                                    return
-                                                }
-                                                await claimBlindBag(ticket.event.eventId)
-                                                setHasClaimed(true)
-                                            } catch (e: any) {
-                                                console.error(e)
-                                            } finally {
-                                                setLoading(false)
-                                            }
-                                        }}
-                                        className={`inline-block px-3 py-1 rounded text-xs font-semibold ${hasClaimed ? 'bg-gray-400 text-gray-800 cursor-not-allowed' : 'bg-yellow-400 text-purple-900 hover:bg-yellow-300'}`}
-                                    >
-                                        {hasClaimed ? 'Drawed' : 'Claim Lucky Draw'}
-                                    </button>
-                                )}
-=======
-                                <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-white/20 text-white">
-                                    Ticket #{ticket.tokenId}
-                                </span>
->>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
+                                {(() => {
+                                    if (!ticket.event) return null;
+                                    const nowSec = Math.floor(Date.now() / 1000);
+                                    const isEventOver = Boolean(ticket.event.hasEnded) || nowSec >= ticket.event.endTime;
+                                    if (!isEventOver) return null;
+                                    return (
+                                        <button
+                                            disabled={hasClaimed}
+                                            onClick={() => setClaimModalOpen(true)}
+                                            className={`inline-block px-3 py-1 rounded text-xs font-semibold ${hasClaimed ? 'bg-gray-400 text-gray-800 cursor-not-allowed' : 'bg-yellow-400 text-purple-900 hover:bg-yellow-300'}`}
+                                        >
+                                            {hasClaimed ? 'Drawed' : 'Claim Lucky Draw'}
+                                        </button>
+                                    );
+                                })()}
                             </div>
                         </div>
                     </div>
@@ -326,7 +275,6 @@ const TicketDetails: React.FC = () => {
                             </div>
 
                             <div className="flex items-start text-purple-200">
-<<<<<<< HEAD
                                 <Calendar className="w-5 h-5 mr-3 mt-1" />
                                 <div>
                                     <div className="font-semibold">End Date</div>
@@ -337,8 +285,6 @@ const TicketDetails: React.FC = () => {
                             </div>
 
                             <div className="flex items-start text-purple-200">
-=======
->>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
                                 <ExternalLink className="w-5 h-5 mr-3 mt-1" />
                                 <div>
                                     <div className="font-semibold">Ticket ID</div>
@@ -365,7 +311,6 @@ const TicketDetails: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-<<<<<<< HEAD
 
                             <div className="flex items-start text-purple-200">
                                 <ExternalLink className="w-5 h-5 mr-3 mt-1" />
@@ -374,8 +319,6 @@ const TicketDetails: React.FC = () => {
                                     <div className="text-sm">{getNetworkName(chainId)}{chainId ? ` (Chain ID: ${chainId})` : ''}</div>
                                 </div>
                             </div>
-=======
->>>>>>> 1ac46afedf85729797c6f84e5815f6ccc22cb6ab
                         </div>
 
                         {/* Owner Info */}
@@ -429,6 +372,74 @@ const TicketDetails: React.FC = () => {
                             >
                                 Close
                             </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Claim Lucky Draw Modal */}
+                {claimModalOpen && ticket?.event && (
+                    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-xl p-6 shadow-lg relative max-w-md w-full">
+                            <h2 className="text-xl font-bold mb-3 text-purple-700">Confirm Lucky Draw</h2>
+                            {!claimResult ? (
+                                <>
+                                    <p className="text-gray-700 mb-4">
+                                        You have one chance to join the lucky draw for this event. Continue?
+                                    </p>
+                                    <div className="flex justify-end space-x-3">
+                                        <button
+                                            className="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300"
+                                            onClick={() => setClaimModalOpen(false)}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            className="px-4 py-2 rounded-lg bg-yellow-400 text-purple-900 font-semibold hover:bg-yellow-300"
+                                            onClick={async () => {
+                                                if (!ticket?.event) return
+                                                try {
+                                                    setLoading(true)
+                                                    const claimedNow = await hasClaimedBlindBag(account!, ticket.event.eventId)
+                                                    if (claimedNow) {
+                                                        setHasClaimed(true)
+                                                        toast.error('Already claimed the lucky draw for this event')
+                                                        return
+                                                    }
+                                                    const result = await claimBlindBag(ticket.event.eventId)
+                                                    setClaimResult(result)
+                                                    setHasClaimed(true)
+                                                } catch (e: any) {
+                                                    console.error(e)
+                                                } finally {
+                                                    setLoading(false)
+                                                }
+                                            }}
+                                        >
+                                            Confirm
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="mb-4">
+                                        <h3 className="text-lg font-semibold text-purple-800">Lucky Draw Result</h3>
+                                        {typeof claimResult.rewardId === 'number' ? (
+                                            <p className="text-gray-700">Congratulations! Reward ID: <span className="font-mono">{claimResult.rewardId}</span></p>
+                                        ) : (
+                                            <p className="text-gray-700">Claimed successfully. Check your rewards.</p>
+                                        )}
+                                        <p className="text-xs text-gray-500 mt-2">Tx: <span className="font-mono">{claimResult.txHash.slice(0, 10)}...{claimResult.txHash.slice(-8)}</span></p>
+                                    </div>
+                                    <div className="flex justify-end">
+                                        <button
+                                            className="px-4 py-2 rounded-lg bg-purple-600 text-white font-semibold hover:bg-purple-700"
+                                            onClick={() => setClaimModalOpen(false)}
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 )}

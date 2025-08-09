@@ -27,7 +27,6 @@ export interface Event {
   endTime: number
   isActive: boolean
   hasEnded: boolean
-  stickers: string[]
 }
 
 export interface TicketTier {
@@ -138,8 +137,7 @@ export const useEventContract = () => {
     description: string,
     imageUri: string,
     startTime: Date,
-    endTime: Date, 
-    stickers: string[] = []
+    endTime: Date
   ) => {
     try {
       setLoading(true)
@@ -161,8 +159,7 @@ export const useEventContract = () => {
         description,
         imageUri,
         startTimestamp,
-        endTimestamp, 
-        []
+        endTimestamp
       )
 
       toast.loading('Creating event...', { id: 'create-event' })
@@ -300,8 +297,7 @@ export const useEventContract = () => {
         startTime: Number(eventData.startTime),
         endTime: Number(eventData.endTime),
         isActive: eventData.isActive,
-        hasEnded: eventData.hasEnded, 
-        stickers: eventData.stickers || []
+        hasEnded: eventData.hasEnded
       }
     } catch (error) {
       console.error('Error getting event:', error)
@@ -427,17 +423,37 @@ export const useEventContract = () => {
     }
   }
 
-  const claimBlindBag = async (eventId: number) => {
+  const claimBlindBag = async (eventId: number): Promise<{ txHash: string, rewardId?: number }> => {
     try {
       setLoading(true)
       const contractWithSigner = getContractWithSigner()
       const tx = await contractWithSigner.claimBlindBag(eventId)
 
       toast.loading('Claiming lucky draw...', { id: 'claim-blindbag' })
-      await tx.wait()
+      const receipt = await tx.wait()
+
+      // Try to parse rewardId from BlindBagClaimed event
+      let rewardId: number | undefined = undefined
+      try {
+        const iface = contractWithSigner.interface
+        const blindBagLog = receipt.logs.find((log: any) => {
+          try {
+            const parsed = iface.parseLog(log)
+            return parsed?.name === 'BlindBagClaimed'
+          } catch {
+            return false
+          }
+        })
+        if (blindBagLog) {
+          const parsed = iface.parseLog(blindBagLog)
+          rewardId = Number(parsed?.args?.rewardId)
+        }
+      } catch (parseError) {
+        console.warn('Unable to parse BlindBagClaimed event:', parseError)
+      }
 
       toast.success('Lucky draw claimed!', { id: 'claim-blindbag' })
-      return tx.hash
+      return { txHash: tx.hash, rewardId }
     } catch (error: any) {
       console.error('Error claiming blind bag:', error)
       toast.error(error?.reason || error?.message || 'Failed to claim lucky draw', { id: 'claim-blindbag' })

@@ -38,7 +38,7 @@ const CreateEvent: React.FC = () => {
     }
   ])
 
-  const [stickers, setStickers] = useState<string[] | null>(null);
+  const [stickers, setStickers] = useState<string[]>([]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target

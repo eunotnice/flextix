@@ -101,7 +101,11 @@ const MyTickets: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tickets.map((ticket, index) => {
               const status = getEventStatus(ticket.event)
-              const showLuckyDot = Boolean(ticket.event && ticket.event.hasEnded)
+              const showLuckyDot = (() => {
+                if (!ticket.event) return false
+                const nowSec = Math.floor(Date.now() / 1000)
+                return Boolean(ticket.event.hasEnded) || nowSec >= ticket.event.endTime
+              })()
               const statusColors = {
                 upcoming: 'bg-blue-500',
                 live: 'bg-green-500',
@@ -138,7 +142,7 @@ const MyTickets: React.FC = () => {
                           </span>
                           {/* Red dot for lucky draw eligibility: show if event ended */}
                           {showLuckyDot && (
-                            <span className="absolute -top-1 -right-1 block h-3 w-3 rounded-full bg-red-500 animate-pulse" title="Lucky draw available"></span>
+                            <span className="absolute -top-1 -right-1 block h-3 w-3 rounded-full bg-yellow-400 animate-pulse" title="Lucky draw available"></span>
                           )}
                         </div>
                       </div>
