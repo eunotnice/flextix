@@ -208,7 +208,33 @@ const CreateEvent: React.FC = () => {
                     placeholder="https://example.com/image.jpg (optional - default will be used)"
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
+
+                  {/* Beautiful centered image preview */}
+                  {formData.imageUri && (
+                    <div className="flex justify-center mt-4">
+                      <div className="relative w-64 h-40 rounded-xl overflow-hidden border-2 border-purple-600 shadow-lg bg-gradient-to-tr from-purple-700 via-purple-900 to-black">
+                        <img
+                          src={formData.imageUri}
+                          alt="Event preview"
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                          onLoad={(e) => {
+                            e.currentTarget.style.display = 'block';
+                          }}
+                        />
+                        {/* Optional overlay label */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-purple-900 bg-opacity-60 text-white text-center py-1 text-sm font-medium select-none">
+                          Preview
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
+
+
+
 
                 <div>
                   <label className="block text-white font-semibold mb-2">
@@ -318,11 +344,19 @@ const CreateEvent: React.FC = () => {
                           Price (ETH)
                         </label>
                         <input
-                          type="number"
-                          step="0.001"
-                          min="0"
+                          type="text"
+                          inputMode="decimal"          // numeric keyboard with decimal point on mobiles
                           value={tier.price}
-                          onChange={(e) => handleTierChange(index, 'price', e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            // Allow empty string OR a number with up to 2 decimals, no negative
+                            if (
+                              val === "" || 
+                              /^(\d+)?(\.\d{0,2})?$/.test(val)
+                            ) {
+                              handleTierChange(index, 'price', val);
+                            }
+                          }}
                           placeholder="0.01"
                           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
@@ -331,10 +365,17 @@ const CreateEvent: React.FC = () => {
                       <div>
                         <label className="block text-white font-semibold mb-2">Max Supply</label>
                         <input
-                          type="number"
-                          min="1"
+                          type="text"              // changed from number to text
+                          inputMode="numeric"      // numeric keyboard on mobile
                           value={tier.maxSupply}
-                          onChange={(e) => handleTierChange(index, 'maxSupply', parseInt(e.target.value) || 1)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (/^\d*$/.test(val)) {   // allow only digits (empty allowed to delete)
+                              // Prevent empty string going to 0 or 1? You can adjust here:
+                              // For now, just pass the string value and parse later if needed
+                              handleTierChange(index, 'maxSupply', val);
+                            }
+                          }}
                           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
                       </div>
@@ -342,13 +383,19 @@ const CreateEvent: React.FC = () => {
                       <div>
                         <label className="block text-white font-semibold mb-2">Max Per Wallet</label>
                         <input
-                          type="number"
-                          min="1"
+                          type="text"
+                          inputMode="numeric"
                           value={tier.maxPerWallet}
-                          onChange={(e) => handleTierChange(index, 'maxPerWallet', parseInt(e.target.value) || 1)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (/^\d*$/.test(val)) {
+                              handleTierChange(index, 'maxPerWallet', val);
+                            }
+                          }}
                           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
                       </div>
+
                     </div>
                   </div>
                 ))}
