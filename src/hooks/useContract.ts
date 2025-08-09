@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 
 // Inline ABI to avoid build issues
 const EVENT_TICKETING_ABI = [
-  "function createEvent(string memory _name, string memory _description, uint256 _startTime, uint256 _endTime, string memory _location, string memory _imageUrl, tuple(string name, uint256 price, uint256 maxSupply)[] memory _tiers) external",
+  "function createEvent(string memory _name, string memory _description, uint256 _startTime, uint256 _endTime, string memory _location, string memory _imageUrl, tuple(string name, uint256 price, uint256 maxSupply)[] memory _tiers, string[] memory _stickers) external",
   "function purchaseTicket(uint256 _eventId, uint256 _tierId) external payable",
   "function getEvent(uint256 _eventId) external view returns (tuple(uint256 id, string name, string description, uint256 startTime, uint256 endTime, string location, string imageUrl, address organizer, bool isActive, uint256 totalTicketsSold))",
   "function getEventTiers(uint256 _eventId) external view returns (tuple(uint256 id, string name, uint256 price, uint256 maxSupply, uint256 currentSupply)[])",

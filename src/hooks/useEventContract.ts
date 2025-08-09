@@ -27,6 +27,7 @@ export interface Event {
   endTime: number
   isActive: boolean
   hasEnded: boolean
+  stickers: string[]
 }
 
 export interface TicketTier {
@@ -137,7 +138,8 @@ export const useEventContract = () => {
     description: string,
     imageUri: string,
     startTime: Date,
-    endTime: Date
+    endTime: Date, 
+    stickers: string[] = []
   ) => {
     try {
       setLoading(true)
@@ -159,7 +161,8 @@ export const useEventContract = () => {
         description,
         imageUri,
         startTimestamp,
-        endTimestamp
+        endTimestamp, 
+        []
       )
 
       toast.loading('Creating event...', { id: 'create-event' })
@@ -297,7 +300,8 @@ export const useEventContract = () => {
         startTime: Number(eventData.startTime),
         endTime: Number(eventData.endTime),
         isActive: eventData.isActive,
-        hasEnded: eventData.hasEnded
+        hasEnded: eventData.hasEnded, 
+        stickers: eventData.stickers || []
       }
     } catch (error) {
       console.error('Error getting event:', error)
