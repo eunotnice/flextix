@@ -2,12 +2,14 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Ticket, Calendar, MapPin, Clock, ExternalLink, Star } from 'lucide-react'
 import { useUserTickets } from '../hooks/useUserTickets'
+import { useEventContract } from '../hooks/useEventContract'
 import { useWeb3 } from '../context/Web3Context'
 import { ethers } from 'ethers'
 import { QRCodeSVG } from 'qrcode.react'; // Make sure to install: npm install qrcode.react
 
 const MyTickets: React.FC = () => {
   const { tickets, loading } = useUserTickets()
+  const { hasClaimedBlindBag } = useEventContract()
   const { isConnected, connectWallet } = useWeb3()
   const [qrOpen, setQrOpen] = useState(false)
   const [qrTicket, setQrTicket] = useState<any>(null)
@@ -99,6 +101,7 @@ const MyTickets: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tickets.map((ticket, index) => {
               const status = getEventStatus(ticket.event)
+              const showLuckyDot = Boolean(ticket.event && ticket.event.hasEnded)
               const statusColors = {
                 upcoming: 'bg-blue-500',
                 live: 'bg-green-500',
@@ -129,14 +132,18 @@ const MyTickets: React.FC = () => {
                             {ticket.tier?.name || 'General Admission'}
                           </p>
                         </div>
-                        <div className="text-right">
+                         <div className="text-right relative">
                           <span className={`px-2 py-1 rounded-full text-xs font-semibold text-white ${statusColors[status]}`}>
                             {statusLabels[status]}
                           </span>
+                          {/* Red dot for lucky draw eligibility: show if event ended */}
+                          {showLuckyDot && (
+                            <span className="absolute -top-1 -right-1 block h-3 w-3 rounded-full bg-red-500 animate-pulse" title="Lucky draw available"></span>
+                          )}
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Ticket perforation effect */}
                     <div className="h-4 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative">
                       <div className="absolute inset-0 flex justify-center">
@@ -155,7 +162,7 @@ const MyTickets: React.FC = () => {
                             <Calendar className="w-4 h-4 mr-2" />
                             <span>{formatDate(ticket.event.startTime)}</span>
                           </div>
-                          
+
                           <div className="flex items-center text-purple-200 text-sm">
                             <Clock className="w-4 h-4 mr-2" />
                             <span>Ends: {formatDate(ticket.event.endTime)}</span>
@@ -184,7 +191,7 @@ const MyTickets: React.FC = () => {
                           </div>
                         )}
                       </div>
-                      
+
                       {ticket.tier && (
                         <div className="text-right">
                           <div className="text-white font-semibold">
@@ -204,11 +211,12 @@ const MyTickets: React.FC = () => {
                     {ticket.event && (
                       <>
                         <Link
-                          to={`/events/${ticket.eventId}`}
+                          to={`/my-tickets/${ticket.tokenId}`}
                           className="mt-4 block w-full bg-white/10 hover:bg-white/20 text-white text-center py-2 rounded-lg transition-colors text-sm font-semibold"
                         >
-                          View Event Details
+                          View Ticket Details
                         </Link>
+
                         <button
                           className="mt-2 block w-full bg-purple-600 hover:bg-purple-700 text-white text-center py-2 rounded-lg transition-colors text-sm font-semibold"
                           onClick={() => { setQrTicket(ticket); setQrOpen(true); }}

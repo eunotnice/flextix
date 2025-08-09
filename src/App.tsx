@@ -10,6 +10,9 @@ import CreateEvent from './pages/CreateEvent'
 import MyTickets from './pages/MyTickets'
 import Profile from './pages/Profile'
 import { Web3Provider, useWeb3 } from './context/Web3Context'
+import TicketDetails from './pages/TicketDetails'
+
+
 
 const NetworkBanner = () => {
   const { isConnected, isCorrectNetwork, switchToCorrectNetwork } = useWeb3()
@@ -53,6 +56,9 @@ function App() {
                 <Route path="/create-event" element={<CreateEvent />} />
                 <Route path="/my-tickets" element={<MyTickets />} />
                 <Route path="/profile" element={<Profile />} />
+                {/* <Route path="/tickets/:id" element={<TicketDetails />} /> */}
+                <Route path="/my-tickets/:id" element={<TicketDetails />} />
+
               </Routes>
             </main>
           </div>
