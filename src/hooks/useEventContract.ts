@@ -12,6 +12,7 @@ const EVENT_TICKETING_ABI = JSON.parse(contractData.abi)
 
 // Debug environment variables
 console.log('=== ENVIRONMENT VARIABLES ===')
+console.log("🧪 VITE_TESTING_ENV_VAR:", import.meta.env.VITE_TESTING_ENV_VAR)
 console.log('VITE_EVENT_TICKETING_CONTRACT:', import.meta.env.VITE_EVENT_TICKETING_CONTRACT)
 console.log('CONTRACT_ADDRESS:', CONTRACT_ADDRESS)
 console.log('All env vars:', import.meta.env)
@@ -81,12 +82,14 @@ export const useEventContract = () => {
         setContract(eventContract)
         console.log('✅ Contract instance created successfully')
         
+        /*
         // Test the contract
         eventContract.name().then((name: string) => {
           console.log('✅ Contract name:', name)
         }).catch((error: any) => {
           console.error('❌ Failed to get contract name:', error)
         })
+          */
         
         // Test contract address
         eventContract.getAddress().then((address: string) => {
@@ -138,10 +141,18 @@ export const useEventContract = () => {
   ) => {
     try {
       setLoading(true)
+
       const contractWithSigner = getContractWithSigner()
-      
+      if (!contractWithSigner) {
+        throw new Error("❌ Contract not available (getContractWithSigner returned undefined)")
+      }
+
       const startTimestamp = Math.floor(startTime.getTime() / 1000)
       const endTimestamp = Math.floor(endTime.getTime() / 1000)
+
+      console.log("📤 Sending createEvent transaction with:", {
+        name, description, imageUri, startTimestamp, endTimestamp
+      })
 
       const tx = await contractWithSigner.createEvent(
         name,
@@ -153,33 +164,43 @@ export const useEventContract = () => {
 
       toast.loading('Creating event...', { id: 'create-event' })
       const receipt = await tx.wait()
-      
-      // Find the EventCreated event in the logs
-      const eventCreatedLog = receipt.logs.find((log: any) => {
-        try {
-          const parsed = contract?.interface.parseLog(log)
-          return parsed?.name === 'EventCreated'
-        } catch {
-          return false
-        }
-      })
+      console.log("✅ Transaction mined:", receipt)
 
       let eventId = 0
-      if (eventCreatedLog) {
-        const parsed = contract?.interface.parseLog(eventCreatedLog)
-        eventId = Number(parsed?.args.eventId)
+
+      try {
+        const iface = contractWithSigner.interface
+        const eventCreatedLog = receipt.logs.find((log: any) => {
+          try {
+            const parsed = iface.parseLog(log)
+            return parsed?.name === 'EventCreated'
+          } catch {
+            return false
+          }
+        })
+
+        if (eventCreatedLog) {
+          const parsed = iface.parseLog(eventCreatedLog)
+          eventId = Number(parsed?.args.eventId)
+        } else {
+          console.warn("⚠️ EventCreated log not found")
+        }
+      } catch (logParseError) {
+        console.error("❌ Failed to parse event logs:", logParseError)
       }
 
       toast.success('Event created successfully!', { id: 'create-event' })
       return { eventId, txHash: tx.hash }
+
     } catch (error: any) {
-      console.error('Error creating event:', error)
-      toast.error(error.reason || 'Failed to create event', { id: 'create-event' })
+      console.error('❌ Error creating event:', error)
+      toast.error(error?.reason || error?.message || 'Failed to create event', { id: 'create-event' })
       throw error
     } finally {
       setLoading(false)
     }
   }
+
 
   const createTicketTier = async (
     eventId: number,
@@ -260,9 +281,12 @@ export const useEventContract = () => {
   }
 
   const getEvent = async (eventId: number): Promise<Event | null> => {
-    try {
-      if (!contract) return null
-      
+    if (!contract) {
+      console.error('❌ No contract found')
+      return null
+    }
+
+    try {      
       const eventData = await contract.events(eventId)
       return {
         eventId: Number(eventData.eventId),
@@ -390,7 +414,7 @@ export const useEventContract = () => {
 
   return {
     contract,
-    loading,
+    loading: loading || !contract,
     isConnected,
     createEvent,
     createTicketTier,

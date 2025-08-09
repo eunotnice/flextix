@@ -43,10 +43,20 @@ async function main() {
   const blindBagAddress = await blindBagNFT.getAddress();
   console.log("BlindBagNFT deployed to:", blindBagAddress);
 
+  // Deploy MetaMaskTicket contract
+  console.log("\nDeploying MetaMaskTicket contract...");
+  const MetaMaskTicket = await ethers.getContractFactory("MetaMaskTicket");
+  const metaMaskTicket = await MetaMaskTicket.deploy();
+  await metaMaskTicket.waitForDeployment();
+
+  const metaMaskTicketAddress = await metaMaskTicket.getAddress();
+  console.log("MetaMaskTicket deployed to:", metaMaskTicketAddress);
+
   // Save contract addresses and ABIs
   const contractAddresses = {
     EventTicketing: eventTicketingAddress,
     BlindBagNFT: blindBagAddress,
+    MetaMaskTicket: metaMaskTicket,
     network: await ethers.provider.getNetwork()
   };
 
@@ -64,6 +74,7 @@ async function main() {
   // Save ABIs
   const EventTicketingArtifact = await ethers.getContractFactory("EventTicketing");
   const BlindBagNFTArtifact = await ethers.getContractFactory("BlindBagNFT");
+  const MetaMaskTicketArtifact = await ethers.getContractFactory("MetaMaskTicket");
 
   fs.writeFileSync(
     "src/contracts/EventTicketing.json",
@@ -81,6 +92,14 @@ async function main() {
     }, null, 2)
   );
 
+  fs.writeFileSync(
+    "src/contracts/MetaMaskTicket.json",
+    JSON.stringify({
+      abi: MetaMaskTicketArtifact.interface.formatJson(),
+      address: metaMaskTicketAddress
+    }, null, 2)
+  );
+
   console.log("\n✅ Deployment completed!");
   console.log("📄 Contract addresses saved to src/contracts/addresses.json");
   console.log("📄 ABIs saved to src/contracts/");
@@ -88,6 +107,7 @@ async function main() {
   console.log("\n🔧 Update your .env file with:");
   console.log(`VITE_EVENT_TICKETING_CONTRACT=${eventTicketingAddress}`);
   console.log(`VITE_BLIND_BAG_CONTRACT=${blindBagAddress}`);
+  console.log(`VITE_METAMASK_TICKET_CONTRACT=${metaMaskTicketAddress}`);
 }
 
 main()

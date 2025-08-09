@@ -11,7 +11,7 @@ const EVENT_TICKETING_ABI = [
   "function getAllEvents() external view returns (tuple(uint256 id, string name, string description, uint256 startTime, uint256 endTime, string location, string imageUrl, address organizer, bool isActive, uint256 totalTicketsSold)[])",
   "function eventCount() external view returns (uint256)",
   "event EventCreated(uint256 indexed eventId, string name, address indexed organizer)",
-  "event TicketPurchased(uint256 indexed eventId, uint256 indexed tierId, address indexed buyer, uint256 tokenId)"
+  "event TicketPurchased(uint256 indexed eventId, uint256 indexed tierId, uint256 tokenId, address indexed buyer)"
 ];
 
 const BLIND_BAG_ABI = [

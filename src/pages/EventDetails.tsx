@@ -10,7 +10,7 @@ const EventDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { isConnected, connectWallet } = useWeb3()
-  const { getEvent, getEventTiers, getTicketTier, purchaseTicket, loading } = useEventContract()
+  const { contract, getEvent, getEventTiers, getTicketTier, purchaseTicket, loading } = useEventContract()
   
   const [event, setEvent] = useState<Event | null>(null)
   const [tiers, setTiers] = useState<TicketTier[]>([])
@@ -20,19 +20,29 @@ const EventDetails: React.FC = () => {
 
   useEffect(() => {
     const fetchEventData = async () => {
-      if (!id) return
+      if (!contract || !id) return // 🔒 Wait until contract is ready
+
+      const eventId = parseInt(id)
+      if (isNaN(eventId)) {
+        toast.error('Invalid event ID')
+        navigate('/events')
+        return
+      }
 
       try {
         setEventLoading(true)
-        const eventId = parseInt(id)
-        
+
         // Fetch event details
+        console.log('🔍 Trying to fetch event ID:', eventId)
         const eventData = await getEvent(eventId)
+        console.log('📦 Event data:', eventData)
+
         if (!eventData) {
-          toast.error('Event not found')
-          navigate('/events')
+          toast.error(`Event with ID ${eventId} not found or failed to load`)
+          setEvent(null)
           return
         }
+
         setEvent(eventData)
 
         // Fetch ticket tiers
@@ -40,13 +50,14 @@ const EventDetails: React.FC = () => {
         const tierPromises = tierIds.map(tierId => getTicketTier(tierId))
         const tiersData = await Promise.all(tierPromises)
         const validTiers = tiersData.filter((tier): tier is TicketTier => tier !== null)
-        setTiers(validTiers)
 
+        setTiers(validTiers)
         if (validTiers.length > 0) {
           setSelectedTier(validTiers[0])
         }
+
       } catch (error) {
-        console.error('Error fetching event data:', error)
+        console.error('❌ Error fetching event data:', error)
         toast.error('Failed to load event details')
       } finally {
         setEventLoading(false)
@@ -54,7 +65,8 @@ const EventDetails: React.FC = () => {
     }
 
     fetchEventData()
-  }, [id])
+  }, [contract, id]) // ✅ Add `contract` to dependencies
+
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleDateString('en-US', {

@@ -5,10 +5,15 @@ import { useWeb3 } from '../context/Web3Context'
 export const useEvents = () => {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
-  const { contract } = useEventContract()
-  const { isConnected, isCorrectNetwork } = useWeb3()
+  const { contract, loading: contractLoading } = useEventContract() // Get loading state
+  const { provider, isConnected, isCorrectNetwork } = useWeb3()
 
   const fetchEvents = async () => {
+    if (contractLoading) {
+      console.log('⏳ Waiting for contract to initialize...')
+      return
+    }
+    
     console.log('=== FETCH EVENTS START ===')
     console.log('Contract available:', !!contract)
     console.log('Is connected:', isConnected)
@@ -36,6 +41,7 @@ export const useEvents = () => {
       setLoading(true)
       console.log('✅ All checks passed, fetching events...')
       
+      /*
       // Test contract connection first
       try {
         const contractName = await contract.name()
@@ -45,11 +51,20 @@ export const useEvents = () => {
         setLoading(false)
         return
       }
-      
+      */
+
       // Method 1: Try to get events from EventCreated logs
       console.log('🔍 Looking for EventCreated logs...')
-      const filter = contract.filters.EventCreated()
-      const eventLogs = await contract.queryFilter(filter)
+      if (!provider) {
+        console.log('❌ No provider available')
+        setLoading(false)
+        return
+      }
+
+      const filter = contract.filters.EventCreated(null, null)
+      const currentBlock = await provider.getBlockNumber()
+      const fromBlock = Math.max(currentBlock - 5000, 0)
+      const eventLogs = await contract.queryFilter(filter, fromBlock, 'latest')
       console.log('📊 Found event logs:', eventLogs.length)
       
       let eventsData: Event[] = []
@@ -57,7 +72,14 @@ export const useEvents = () => {
       if (eventLogs.length > 0) {
         console.log('📝 Processing event logs...')
         const eventPromises = eventLogs.map(async (log) => {
-          const parsed = contract.interface.parseLog(log)
+          let parsed
+          try {
+            parsed = contract.interface.parseLog(log)
+          } catch (err) {
+            console.warn('⚠️ Failed to parse log:', err)
+            return null
+          }
+
           const eventId = Number(parsed?.args.eventId)
           console.log('🆔 Processing event ID:', eventId)
           
@@ -92,6 +114,7 @@ export const useEvents = () => {
         for (let i = 0; i < maxEventsToCheck; i++) {
           try {
             const eventData = await contract.events(i)
+            await new Promise((res) => setTimeout(res, 200))
             console.log(`🔍 Checking event ID ${i}:`, eventData.name)
             
             if (eventData.name && eventData.name !== '') {
@@ -132,12 +155,17 @@ export const useEvents = () => {
   }
 
   useEffect(() => {
-    fetchEvents()
-  }, [contract, isConnected, isCorrectNetwork])
+    if (contract && provider && isConnected && isCorrectNetwork) {
+      fetchEvents()
+    }
+  }, [contract, provider, isConnected, isCorrectNetwork])
 
+ 
   const refetch = () => {
-    console.log('🔄 Refetching events...')
-    fetchEvents()
+    if (!loading) {
+      console.log('🔄 Refetching events...')
+      fetchEvents()
+    }
   }
 
   return {
