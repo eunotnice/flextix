@@ -38,7 +38,8 @@ const CreateEvent: React.FC = () => {
     }
   ])
 
-  const [stickers, setStickers] = useState<string[]>([]);
+  type StickerForm = { name: string; imageUri: string; percentage: number }
+  const [stickers, setStickers] = useState<StickerForm[]>([{ name: '', imageUri: '', percentage: 0 }]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -99,8 +100,19 @@ const CreateEvent: React.FC = () => {
       // Use a default image if none provided
       const imageUri = formData.imageUri || `https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=400&fit=crop`
 
-      // Prepare stickers: filter out empty strings
-      const filteredStickers = stickers.filter(url => url.trim() !== '')
+      // Validate stickers: must have at least one; sum percentages to 100
+      const cleanedStickers = stickers
+        .map(s => ({ name: s.name.trim(), imageUri: s.imageUri.trim(), percentage: Number(s.percentage) }))
+        .filter(s => s.name && s.imageUri && !Number.isNaN(s.percentage))
+      if (cleanedStickers.length === 0) {
+        toast.error('Please add at least one sticker with name, image and percentage')
+        return
+      }
+      const totalPct = cleanedStickers.reduce((sum, s) => sum + s.percentage, 0)
+      if (totalPct !== 100) {
+        toast.error('Sticker percentages must add up to 100')
+        return
+      }
 
       // Create the event with stickers included
       // Assuming your createEvent function accepts stickers as an argument
@@ -110,7 +122,7 @@ const CreateEvent: React.FC = () => {
         imageUri,
         startDateTime,
         endDateTime,
-        filteredStickers  // <-- add stickers here
+        cleanedStickers  // pass structured stickers
       )
 
       // Create ticket tiers
@@ -411,41 +423,76 @@ const CreateEvent: React.FC = () => {
               </div>
             </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">Stickers (optional):</label>
-              
-              {stickers.map((sticker, index) => (
-                <div key={index} className="flex items-center mb-2">
-                  <input
-                    type="url"
-                    placeholder="Sticker URL"
-                    value={sticker}
-                    onChange={(e) => {
-                      const newStickers = [...stickers];
-                      newStickers[index] = e.target.value;
-                      setStickers(newStickers);
-                    }}
-                    className="flex-grow border rounded px-3 py-2 mr-2"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStickers(stickers.filter((_, i) => i !== index));
-                    }}
-                    className="text-red-500 font-bold"
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-white">Stickers</h2>
+                <button
+                  type="button"
+                  onClick={() => setStickers(prev => [...prev, { name: '', imageUri: '', percentage: 0 }])}
+                  className="flex items-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl transition-colors"
+                >
+                  <Plus className="w-4 h-4 mr-2" /> Add Sticker
+                </button>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => setStickers([...stickers, ''])}
-                className="mt-2 text-purple-600 hover:underline"
-              >
-                + Add Sticker
-              </button>
+              <p className="text-purple-200 text-sm mb-4">Percentages are used for future lucky draw odds. Total must equal 100.</p>
+
+              <div className="space-y-4">
+                {stickers.map((s, i) => (
+                  <div key={i} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end bg-white/5 rounded-xl p-4 border border-white/10">
+                    <div className="md:col-span-4">
+                      <label className="block text-white font-semibold mb-2">Name</label>
+                      <input
+                        type="text"
+                        value={s.name}
+                        onChange={(e) => setStickers(prev => prev.map((x, idx) => idx === i ? { ...x, name: e.target.value } : x))}
+                        placeholder="e.g., Gold Badge"
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        required
+                      />
+                    </div>
+                    <div className="md:col-span-6">
+                      <label className="block text-white font-semibold mb-2">Image URL</label>
+                      <input
+                        type="url"
+                        value={s.imageUri}
+                        onChange={(e) => setStickers(prev => prev.map((x, idx) => idx === i ? { ...x, imageUri: e.target.value } : x))}
+                        placeholder="https://example.com/sticker.png"
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        required
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-white font-semibold mb-2">Percentage</label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={s.percentage}
+                        onChange={(e) => {
+                          const val = Number(e.target.value)
+                          if (!Number.isNaN(val) && val >= 0 && val <= 100) {
+                            setStickers(prev => prev.map((x, idx) => idx === i ? { ...x, percentage: val } : x))
+                          }
+                        }}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        required
+                      />
+                    </div>
+                    <div className="md:col-span-12 flex justify-end">
+                      {stickers.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => setStickers(prev => prev.filter((_, idx) => idx !== i))}
+                          className="text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Submit Button */}

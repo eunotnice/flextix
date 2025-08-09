@@ -134,13 +134,15 @@ export const useEventContract = () => {
     return contractWithSigner
   }
 
+  type StickerInput = { name: string; imageUri: string; percentage: number }
+
   const createEvent = async (
     name: string,
     description: string,
     imageUri: string,
     startTime: Date,
     endTime: Date, 
-    stickers: string[] = []
+    stickers: StickerInput[] = []
   ) => {
     try {
       setLoading(true)
@@ -154,7 +156,7 @@ export const useEventContract = () => {
       const endTimestamp = Math.floor(endTime.getTime() / 1000)
 
       console.log("📤 Sending createEvent transaction with:", {
-        name, description, imageUri, startTimestamp, endTimestamp
+        name, description, imageUri, startTimestamp, endTimestamp, stickers
       })
 
       const tx = await contractWithSigner.createEvent(
@@ -162,8 +164,8 @@ export const useEventContract = () => {
         description,
         imageUri,
         startTimestamp,
-        endTimestamp,
-        stickers
+        endTimestamp, 
+        [] // Stickers not yet supported by deployed contract ABI; ignored for now
       )
 
       toast.loading('Creating event...', { id: 'create-event' })
