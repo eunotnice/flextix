@@ -136,7 +136,7 @@ const MyTickets: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Ticket perforation effect */}
                     <div className="h-4 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative">
                       <div className="absolute inset-0 flex justify-center">
@@ -155,7 +155,7 @@ const MyTickets: React.FC = () => {
                             <Calendar className="w-4 h-4 mr-2" />
                             <span>{formatDate(ticket.event.startTime)}</span>
                           </div>
-                          
+
                           <div className="flex items-center text-purple-200 text-sm">
                             <Clock className="w-4 h-4 mr-2" />
                             <span>Ends: {formatDate(ticket.event.endTime)}</span>
@@ -184,7 +184,7 @@ const MyTickets: React.FC = () => {
                           </div>
                         )}
                       </div>
-                      
+
                       {ticket.tier && (
                         <div className="text-right">
                           <div className="text-white font-semibold">
@@ -204,11 +204,12 @@ const MyTickets: React.FC = () => {
                     {ticket.event && (
                       <>
                         <Link
-                          to={`/events/${ticket.eventId}`}
+                          to={`/my-tickets/${ticket.tokenId}`}
                           className="mt-4 block w-full bg-white/10 hover:bg-white/20 text-white text-center py-2 rounded-lg transition-colors text-sm font-semibold"
                         >
-                          View Event Details
+                          View Ticket Details
                         </Link>
+
                         <button
                           className="mt-2 block w-full bg-purple-600 hover:bg-purple-700 text-white text-center py-2 rounded-lg transition-colors text-sm font-semibold"
                           onClick={() => { setQrTicket(ticket); setQrOpen(true); }}
