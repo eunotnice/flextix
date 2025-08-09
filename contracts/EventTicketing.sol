@@ -87,7 +87,7 @@ contract EventTicketing is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable, 
         string memory _description,
         string memory _imageUri,
         uint256 _startTime,
-        uint256 _endTime
+        uint256 _endTime,
         string[] memory _stickers
     ) external returns (uint256) {
         require(_startTime > block.timestamp, "Start time must be in the future");
@@ -105,7 +105,7 @@ contract EventTicketing is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable, 
             startTime: _startTime,
             endTime: _endTime,
             isActive: true,
-            hasEnded: false
+            hasEnded: false,
             stickers: _stickers
         });
         

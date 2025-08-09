@@ -3,18 +3,19 @@ import { ethers } from 'ethers'
 import { useWeb3 } from '../context/Web3Context'
 import toast from 'react-hot-toast'
 
-const CONTRACT_ADDRESS = import.meta.env.VITE_EVENT_TICKETING_CONTRACT
+const ENV_CONTRACT_ADDRESS = import.meta.env.VITE_EVENT_TICKETING_CONTRACT
 
 // Import the actual ABI from the JSON file
 import contractData from '../contracts/EventTicketing.json'
 
 const EVENT_TICKETING_ABI = JSON.parse(contractData.abi)
+const CONTRACT_ADDRESS: string | undefined = ENV_CONTRACT_ADDRESS || (contractData as any).address
 
 // Debug environment variables
 console.log('=== ENVIRONMENT VARIABLES ===')
 console.log("🧪 VITE_TESTING_ENV_VAR:", import.meta.env.VITE_TESTING_ENV_VAR)
-console.log('VITE_EVENT_TICKETING_CONTRACT:', import.meta.env.VITE_EVENT_TICKETING_CONTRACT)
-console.log('CONTRACT_ADDRESS:', CONTRACT_ADDRESS)
+  console.log('VITE_EVENT_TICKETING_CONTRACT:', ENV_CONTRACT_ADDRESS)
+  console.log('CONTRACT_ADDRESS (env or ABI fallback):', CONTRACT_ADDRESS)
 console.log('All env vars:', import.meta.env)
 
 export interface Event {
@@ -161,8 +162,8 @@ export const useEventContract = () => {
         description,
         imageUri,
         startTimestamp,
-        endTimestamp, 
-        []
+        endTimestamp,
+        stickers
       )
 
       toast.loading('Creating event...', { id: 'create-event' })
