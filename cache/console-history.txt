@@ -1,3 +1,18 @@
+console.log(contract.target)
+console.log(contract.address);
+await contract.totalSupply();
+await contract.name();
+contract.address;
+const contract = EventTicketing.attach("0x5FbDB2315678afecb367f032d93F642f64180aa3");
+const EventTicketing = await ethers.getContractFactory("EventTicketing");
+.exit
+const contract = EventTicketing.attach("0x5FbDB2315678afecb367f032d93F642f64180aa3");
+const EventTicketing = await ethers.getContractFactory
+.exit
+const contract = EventTicketing.attach("0x5FbDB2315678afecb367f032d93F642f64180aa3");
+const EventTicketing = await ethers.getContractFactory
+const contract = await EventTicketing.attach("0x5FbDB2315678afecb367f032d93F642f64180aa3");
+const EventTicketing = await ethers.getContractFactory
 const balance = await contract.balanceOf(user)
 const user = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 .exit

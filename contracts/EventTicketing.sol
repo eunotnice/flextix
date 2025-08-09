@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
  * @title EventTicketing
  * @dev NFT-based event ticketing system with multiple tiers and blind bag rewards
  */
-contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
+contract EventTicketing is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable, ReentrancyGuard {
     uint256 private _tokenIdCounter;
     uint256 private _eventIdCounter;
     
@@ -150,32 +150,40 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
      * @dev Purchase tickets for a specific tier
      */
     function purchaseTicket(uint256 _tierId, uint256 _quantity) external payable nonReentrant {
-        // ... existing checks ...
+        TicketTier storage tier = ticketTiers[_tierId];
+        require(tier.isActive, "Tier is not active");
+        require(_quantity > 0, "Quantity must be greater than zero");
+        require(tier.currentSupply + _quantity <= tier.maxSupply, "Not enough supply");
+        require(walletTierPurchases[msg.sender][_tierId] + _quantity <= tier.maxPerWallet, "Exceeds per wallet limit");
+        require(msg.value == tier.price * _quantity, "Incorrect payment");
+
+        Event storage eventData = events[tier.eventId];
+        require(eventData.isActive, "Event is not active");
+        require(block.timestamp < eventData.endTime, "Event has ended");
 
         for (uint256 i = 0; i < _quantity; i++) {
             uint256 tokenId = _tokenIdCounter;
             _tokenIdCounter++;
-            
+
             _safeMint(msg.sender, tokenId);
             _setTokenURI(tokenId, tier.metadataUri);
 
-            // Fix: Properly initialize the Ticket struct
             tickets[tokenId] = Ticket({
-                tokenId: tokenId, // Store actual tokenId
+                tokenId: tokenId,
                 eventId: tier.eventId,
                 tierId: _tierId,
-                owner: msg.sender, // Store actual owner
+                owner: msg.sender,
                 isUsed: false,
                 purchaseTime: block.timestamp
             });
 
             userOwnedTickets[msg.sender].push(tokenId);
+
             emit TicketPurchased(tier.eventId, _tierId, tokenId, msg.sender);
         }
 
         tier.currentSupply += _quantity;
         walletTierPurchases[msg.sender][_tierId] += _quantity;
-        
         payable(eventData.organizer).transfer(msg.value);
     }
     
@@ -234,7 +242,6 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         
         hasClaimedBlindBag[msg.sender][_eventId] = true;
         
-        // Generate pseudo-random reward
         uint256 randomSeed = uint256(keccak256(abi.encodePacked(
             block.timestamp,
             block.prevrandao,
@@ -245,7 +252,6 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         uint256[] memory rewards = eventRewards[_eventId];
         uint256 selectedRewardId = 0;
         
-        // Select reward based on rarity
         for (uint256 i = 0; i < rewards.length; i++) {
             BlindBagReward memory reward = blindBagRewards[rewards[i]];
             if (reward.isActive && randomSeed <= reward.rarity) {
@@ -316,7 +322,6 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         uint256[] memory allTickets = userOwnedTickets[_user];
         uint256 count = 0;
 
-        // First pass - count valid tickets
         for (uint256 i = 0; i < allTickets.length; i++) {
             uint256 tokenId = allTickets[i];
             if (tickets[tokenId].eventId == _eventId && tickets[tokenId].owner == _user) {
@@ -324,7 +329,6 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
             }
         }
 
-        // Second pass - populate array
         uint256[] memory result = new uint256[](count);
         uint256 index = 0;
         for (uint256 i = 0; i < allTickets.length; i++) {
@@ -337,15 +341,8 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
 
         return result;
     }
-    function supportsInterface(bytes4 interfaceId) 
-        public 
-        view 
-        override(ERC721, ERC721Enumerable, ERC721URIStorage) 
-        returns (bool) 
-    {
-        return super.supportsInterface(interfaceId);
-    }
 
+    // The following functions are overrides required by Solidity.
     function _update(address to, uint256 tokenId, address auth)
         internal
         override(ERC721, ERC721Enumerable)
@@ -361,13 +358,21 @@ contract EventTicketing is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         super._increaseBalance(account, value);
     }
 
-    
-    // Override functions
-    function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override(ERC721, ERC721URIStorage)
+        returns (string memory)
+    {
         return super.tokenURI(tokenId);
     }
-    
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721URIStorage) returns (bool) {
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721, ERC721Enumerable, ERC721URIStorage)
+        returns (bool)
+    {
         return super.supportsInterface(interfaceId);
     }
 }
