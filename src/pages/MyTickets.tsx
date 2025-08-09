@@ -1,14 +1,16 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Ticket, Calendar, MapPin, Clock, ExternalLink, Star } from 'lucide-react'
 import { useUserTickets } from '../hooks/useUserTickets'
 import { useWeb3 } from '../context/Web3Context'
 import { ethers } from 'ethers'
+import { QRCodeSVG } from 'qrcode.react'; // Make sure to install: npm install qrcode.react
 
 const MyTickets: React.FC = () => {
   const { tickets, loading } = useUserTickets()
-  console.log("🎟️ Hook return — tickets:", tickets, "loading:", loading)
   const { isConnected, connectWallet } = useWeb3()
+  const [qrOpen, setQrOpen] = useState(false)
+  const [qrTicket, setQrTicket] = useState<any>(null)
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleDateString('en-US', {
@@ -200,17 +202,49 @@ const MyTickets: React.FC = () => {
 
                     {/* View Event Button */}
                     {ticket.event && (
-                      <Link
-                        to={`/events/${ticket.eventId}`}
-                        className="mt-4 block w-full bg-white/10 hover:bg-white/20 text-white text-center py-2 rounded-lg transition-colors text-sm font-semibold"
-                      >
-                        View Event Details
-                      </Link>
+                      <>
+                        <Link
+                          to={`/events/${ticket.eventId}`}
+                          className="mt-4 block w-full bg-white/10 hover:bg-white/20 text-white text-center py-2 rounded-lg transition-colors text-sm font-semibold"
+                        >
+                          View Event Details
+                        </Link>
+                        <button
+                          className="mt-2 block w-full bg-purple-600 hover:bg-purple-700 text-white text-center py-2 rounded-lg transition-colors text-sm font-semibold"
+                          onClick={() => { setQrTicket(ticket); setQrOpen(true); }}
+                        >
+                          Show Ticket QR
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
               )
             })}
+          </div>
+        )}
+        {/* QR Modal */}
+        {qrOpen && qrTicket && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-8 shadow-lg text-center relative">
+              <h2 className="text-xl font-bold mb-4 text-purple-700">Ticket QR Code</h2>
+              <QRCodeSVG
+                value={JSON.stringify({
+                  tokenId: qrTicket.tokenId,
+                  eventId: qrTicket.eventId,
+                  owner: qrTicket.owner
+                })}
+                size={200}
+              />
+              <div className="mt-4">
+                <button
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold"
+                  onClick={() => setQrOpen(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
