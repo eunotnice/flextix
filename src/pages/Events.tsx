@@ -126,33 +126,6 @@ const Events: React.FC = () => {
           </p>
         </div>
 
-        {/* Debug Info */}
-        <div className="mb-6 p-4 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
-          <h3 className="text-white font-semibold mb-2">Debug Information:</h3>
-          <div className="text-purple-200 text-sm space-y-1">
-            <div>Connected: {isConnected ? 'Yes' : 'No'}</div>
-            <div>Correct Network: {isCorrectNetwork ? 'Yes' : 'No'}</div>
-            <div>Events Found: {events.length}</div>
-            <div>Loading: {loading ? 'Yes' : 'No'}</div>
-          </div>
-          <div className="mt-3 space-x-2">
-            <button
-              onClick={testContract}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-            >
-              Test Contract
-            </button>
-            <button
-              onClick={createTestEvent}
-              disabled={creatingTestEvent}
-              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50"
-            >
-              <Plus className="h-4 w-4 inline mr-2" />
-              <span>{creatingTestEvent ? 'Creating...' : 'Create Test Event'}</span>
-            </button>
-          </div>
-        </div>
-
         {/* Search and Filter */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1">
@@ -235,6 +208,21 @@ const Events: React.FC = () => {
                       View Details
                     </Link>
                   </div>
+
+                  {/* Stickers */}
+                  {event.stickers && event.stickers.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {event.stickers.map((url, idx) => (
+                        <img
+                          key={idx}
+                          src={url}
+                          alt={`Sticker ${idx + 1}`}
+                          className="w-12 h-12 rounded-lg object-cover border border-white/30"
+                          title={`Sticker #${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

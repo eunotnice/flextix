@@ -38,6 +38,8 @@ const CreateEvent: React.FC = () => {
     }
   ])
 
+  const [stickers, setStickers] = useState<string[] | null>(null);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -67,7 +69,7 @@ const CreateEvent: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!isConnected) {
       await connectWallet()
       return
@@ -97,13 +99,18 @@ const CreateEvent: React.FC = () => {
       // Use a default image if none provided
       const imageUri = formData.imageUri || `https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=400&fit=crop`
 
-      // Create the event
+      // Prepare stickers: filter out empty strings
+      const filteredStickers = stickers.filter(url => url.trim() !== '')
+
+      // Create the event with stickers included
+      // Assuming your createEvent function accepts stickers as an argument
       const { eventId } = await createEvent(
         formData.name,
         formData.description,
         imageUri,
         startDateTime,
-        endDateTime
+        endDateTime,
+        filteredStickers  // <-- add stickers here
       )
 
       // Create ticket tiers
@@ -124,8 +131,10 @@ const CreateEvent: React.FC = () => {
       navigate(`/events/${eventId}`)
     } catch (error) {
       console.error('Error creating event:', error)
+      toast.error('Failed to create event')
     }
   }
+
 
   if (!isConnected) {
     return (
@@ -400,6 +409,43 @@ const CreateEvent: React.FC = () => {
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 font-semibold mb-2">Stickers (optional):</label>
+              
+              {stickers.map((sticker, index) => (
+                <div key={index} className="flex items-center mb-2">
+                  <input
+                    type="url"
+                    placeholder="Sticker URL"
+                    value={sticker}
+                    onChange={(e) => {
+                      const newStickers = [...stickers];
+                      newStickers[index] = e.target.value;
+                      setStickers(newStickers);
+                    }}
+                    className="flex-grow border rounded px-3 py-2 mr-2"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStickers(stickers.filter((_, i) => i !== index));
+                    }}
+                    className="text-red-500 font-bold"
+                  >
+                    &times;
+                  </button>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => setStickers([...stickers, ''])}
+                className="mt-2 text-purple-600 hover:underline"
+              >
+                + Add Sticker
+              </button>
             </div>
 
             {/* Submit Button */}
